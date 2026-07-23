@@ -54,7 +54,12 @@ public sealed class CameraSpriteViewLock : MonoBehaviour
         Quaternion spriteRotation = Quaternion.Euler(spriteWorldEulerAngles);
         foreach (SpriteRenderer sprite in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            if (!sprite.gameObject.scene.IsValid() || sprite.gameObject.name == "Ground")
+            // Gameplay roots own movement, colliders and/or the camera rig. Their
+            // visual must live on a child Sprite Layer, never be rotated here.
+            if (!sprite.gameObject.scene.IsValid() ||
+                sprite.gameObject.name == "Ground" ||
+                sprite.TryGetComponent<PlayerController>(out _) ||
+                sprite.TryGetComponent<ChasingEnemy>(out _))
             {
                 continue;
             }
