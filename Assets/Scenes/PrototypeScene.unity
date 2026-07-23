@@ -1076,6 +1076,7 @@ GameObject:
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
   - component: {fileID: 330585548}
+  - component: {fileID: 1040000002}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1214,6 +1215,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TopDownCamera
   target: {fileID: 1747565594}
+--- !u!114 &1040000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f0e1111222233334444555566667777, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraSpriteViewLock
+  cameraLocalPosition: {x: -12.285717, y: 9.652815, z: -12.285717}
+  cameraLocalEulerAngles: {x: 27, y: 45, z: 0}
+  fieldOfView: 35
+  nearClipPlane: 0.3
+  farClipPlane: 100
+  spriteWorldEulerAngles: {x: 27, y: 45, z: 0}
+  applyEveryFrame: 1
 --- !u!1 &334530951
 GameObject:
   m_ObjectHideFlags: 0
