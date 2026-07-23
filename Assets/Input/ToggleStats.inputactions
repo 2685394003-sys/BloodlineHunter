@@ -1,0 +1,46 @@
+{
+    "version": 1,
+    "name": "ToggleStats",
+    "maps": [
+        {
+            "name": "UI",
+            "id": "34394f6f-c36d-43e3-9fef-8fc5f6666bf5",
+            "actions": [
+                {
+                    "name": "ToggleStats",
+                    "type": "Button",
+                    "id": "b2b1564e-5bc7-4e9c-b3f3-0127ed08e82c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "89ec2d86-6e91-4828-bd09-86f7fc5727ac",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleStats",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4017b13b-a058-494b-b550-10414095274a",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleStats",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
