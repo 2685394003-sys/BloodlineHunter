@@ -1,0 +1,15 @@
+# Unity 标准忽略文件
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Mm]emoryCaptures/
+*.log
+
+# Visual Studio 文件
+.vs/
+*.csproj
+*.sln
+*.user
