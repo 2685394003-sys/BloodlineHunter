@@ -1,0 +1,2 @@
+/Assets/Art/DefaultSquare.png filter=lfs diff=lfs merge=lfs -text
+/Assets/Resources/sprite_0.png filter=lfs diff=lfs merge=lfs -text
