@@ -9,10 +9,13 @@ onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
-	"picker_window_position_offset.00000000" = "-8;356;320;550"
+	"picker_window_position_offset.00000000" = "-8;347;320;550"
 	"picker_visibility_flags.00000000" = "0"
-	"picker_item_size.00000000" = "1"
+	"picker_item_size.00000000" = "32"
 	"picker_inspector.00000000" = "0"
+	"last_search.66F56946" = "Gizmos"
+	"OpenInspectorPreview.66F56946" = "0"
+	"currentGroup.66F56946" = "all"
 }
 providers = {
 	asset = {
@@ -74,6 +77,7 @@ providers = {
 objectSelectors = {
 }
 recentSearches = [
+	"Gizmos"
 ]
 searchItemFavorites = [
 ]
