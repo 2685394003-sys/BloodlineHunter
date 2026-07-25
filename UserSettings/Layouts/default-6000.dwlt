@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1300
     height: 860
   m_ShowMode: 4
-  m_Title: "\u9879\u76EE"
+  m_Title: "\u6E38\u620F"
   m_RootView: {fileID: 8}
   m_MinSize: {x: 875, y: 338}
   m_MaxSize: {x: 10000, y: 10000}
@@ -70,8 +70,8 @@ MonoBehaviour:
     y: 422
     width: 686
     height: 172
-  m_MinSize: {x: 52, y: 76}
-  m_MaxSize: {x: 4002, y: 4026}
+  m_MinSize: {x: 50, y: 50}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 17}
   m_Panes:
   - {fileID: 17}
@@ -102,7 +102,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 112}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 142
+  controlID: 45
   draggingID: 0
 --- !u!114 &5
 MonoBehaviour:
@@ -128,7 +128,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 168}
   m_MaxSize: {x: 24288, y: 24288}
   vertical: 0
-  controlID: 139
+  controlID: 42
   draggingID: 0
 --- !u!114 &6
 MonoBehaviour:
@@ -278,7 +278,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 168}
   m_MaxSize: {x: 16192, y: 24288}
   vertical: 1
-  controlID: 140
+  controlID: 43
   draggingID: 0
 --- !u!114 &12
 MonoBehaviour:
@@ -304,7 +304,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 112}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 0
-  controlID: 141
+  controlID: 44
   draggingID: 0
 --- !u!114 &13
 MonoBehaviour:
@@ -464,7 +464,7 @@ MonoBehaviour:
     m_PrefName: Preview_InspectorPreview
   m_LastInspectedObjectEntityId:
     m_rawData: 0
-  m_LastVerticalScrollValue: 0
+  m_LastVerticalScrollValue: 14
   m_GlobalObjectId: 
   m_InspectorMode: 0
   m_LockTracker:
@@ -606,7 +606,7 @@ MonoBehaviour:
   m_LockTracker:
     m_IsLocked: 0
   m_LastSelectedObjectID:
-    m_rawData: 568105584918842358
+    m_rawData: 568105584918842984
 --- !u!114 &18
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -966,7 +966,7 @@ MonoBehaviour:
     m_SkipHidden: 1
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scripts/Player
+    - Assets/Scenes
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -976,44 +976,22 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 16
   m_LastFolders:
-  - Assets/Scripts/Player
+  - Assets/Scenes
   m_LastFoldersGridSize: 16
   m_LastProjectPath: D:\unity\Vampire Hunt Bloodline Curse
   m_LockTracker:
     m_IsLocked: 0
   m_LastLocalAssetsSearchArea: 1
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 240}
+    scrollPos: {x: 0, y: 120}
     m_SelectedIDs:
-    - m_rawData: 568105584918843488
+    - m_rawData: 568105584918842798
     m_LastClickedID:
-      m_rawData: 568105584918843488
+      m_rawData: 568105584918842798
     m_ExpandedIDs:
-    - m_rawData: 568105589213755028
     - m_rawData: 0
-    - m_rawData: 568105584918843284
-    - m_rawData: 568105584918843286
-    - m_rawData: 568105584918843288
-    - m_rawData: 568105584918843290
-    - m_rawData: 568105584918843292
-    - m_rawData: 568105584918843294
-    - m_rawData: 568105584918843296
-    - m_rawData: 568105584918843298
-    - m_rawData: 568105584918843300
-    - m_rawData: 568105584918843302
-    - m_rawData: 568105584918843304
-    - m_rawData: 568105584918843306
-    - m_rawData: 568105584918843308
-    - m_rawData: 568105584918843310
-    - m_rawData: 568105584918843312
-    - m_rawData: 568105584918843314
-    - m_rawData: 568105584918843316
-    - m_rawData: 568105584918843318
-    - m_rawData: 568105584918843320
-    - m_rawData: 568105584918843322
-    - m_rawData: 568105584918843324
-    - m_rawData: 568105584918843326
-    - m_rawData: 568105584918843328
+    - m_rawData: 568105584918842456
+    - m_rawData: 568105584918842800
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1047,29 +1025,7 @@ MonoBehaviour:
       m_rawData: 0
     m_ExpandedIDs:
     - m_rawData: 0
-    - m_rawData: 568105584918843284
-    - m_rawData: 568105584918843286
-    - m_rawData: 568105584918843288
-    - m_rawData: 568105584918843290
-    - m_rawData: 568105584918843292
-    - m_rawData: 568105584918843294
-    - m_rawData: 568105584918843296
-    - m_rawData: 568105584918843298
-    - m_rawData: 568105584918843300
-    - m_rawData: 568105584918843302
-    - m_rawData: 568105584918843304
-    - m_rawData: 568105584918843306
-    - m_rawData: 568105584918843308
-    - m_rawData: 568105584918843310
-    - m_rawData: 568105584918843312
-    - m_rawData: 568105584918843314
-    - m_rawData: 568105584918843316
-    - m_rawData: 568105584918843318
-    - m_rawData: 568105584918843320
-    - m_rawData: 568105584918843322
-    - m_rawData: 568105584918843324
-    - m_rawData: 568105584918843326
-    - m_rawData: 568105584918843328
+    - m_rawData: 568105584918842456
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1098,10 +1054,10 @@ MonoBehaviour:
       m_ResourceFile: 
   m_ListAreaState:
     m_SelectedInstanceIDs:
-    - m_rawData: 568105584918842358
+    - m_rawData: 568105584918842984
     m_LastClickedEntityId:
-      m_rawData: 568105584918842358
-    m_HadKeyboardFocusLastEvent: 0
+      m_rawData: 568105584918842984
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs:
     - m_rawData: 568105584918844900
     - m_rawData: 568105584918843966
@@ -1112,8 +1068,8 @@ MonoBehaviour:
     - m_rawData: 568105584918842540
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: EnemyCombat
-      m_OriginalName: EnemyCombat
+      m_Name: New Scene
+      m_OriginalName: New Scene
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
@@ -1121,7 +1077,7 @@ MonoBehaviour:
         width: 0
         height: 0
       m_UserData:
-        m_rawData: 568105584918831116
+        m_rawData: 568105584918842918
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
       m_OriginalEventType: 0
@@ -1136,7 +1092,7 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
     m_NewAssetIndexInList: -1
-    m_ScrollPosition: {x: 0, y: 7}
+    m_ScrollPosition: {x: 0, y: 0}
     m_GridSize: 16
   m_SkipHiddenPackages: 1
   m_DirectoriesAreaWidth: 204
@@ -1184,14 +1140,12 @@ MonoBehaviour:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs:
-      - m_rawData: 568105584918842358
+      - m_rawData: 568105584918842984
       m_LastClickedID:
-        m_rawData: 568105584918842358
+        m_rawData: 568105584918842984
       m_ExpandedIDs:
-      - m_rawData: 568105589213756014
-      - m_rawData: 568105584918842282
-      - m_rawData: 568105584918842324
-      - m_rawData: 568105584918842358
+      - m_rawData: 568105589213754978
+      - m_rawData: 568105584918843154
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1790,9 +1744,9 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: 24.129194, y: 0.96969473, z: 18.44858}
+    m_Target: {x: 25.591106, y: 1.1908274, z: 18.5998}
     speed: 2
-    m_Value: {x: 24.129194, y: 0.96969473, z: 18.44858}
+    m_Value: {x: 25.591106, y: 1.1908274, z: 18.5998}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1843,9 +1797,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0.31408903, y: 0.004272693, z: -0.0014134403, w: 0.9493829}
   m_Size:
-    m_Target: 3.9000666
+    m_Target: 3.880929
     speed: 2
-    m_Value: 3.9000666
+    m_Value: 3.880929
   m_Ortho:
     m_Target: 0
     speed: 2
