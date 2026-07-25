@@ -61,16 +61,4 @@ public class PlayerAttact : MonoBehaviour
         Gizmos.DrawWireSphere(AttackPoint.position, StatsManager.Instance.weaponRange);
     }    
 
-    public class PlayerAttack : MonoBehaviour
-    {
-        public void OnAttack(InputValue value)
-        {
-            if (value.isPressed)
-            {
-                Debug.Log("鼠标左键攻击触发！");
-                // 在这里写你的攻击逻辑
-            }
-        }
-    }
-
 }

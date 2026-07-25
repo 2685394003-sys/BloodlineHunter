@@ -12,6 +12,5 @@ public class StaminaUI : MonoBehaviour
             return;
 
         staminaSlider.maxValue = StatsManager.Instance.maxStamina;
-        staminaSlider.value = playerDash.currentStamina;
     }
 }
