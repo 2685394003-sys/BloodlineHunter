@@ -17,6 +17,11 @@ public class StatsManager : MonoBehaviour
     [Header("玩家数值 - Movement Stats")]
     public int speed;
 
+    [Header("玩家数值 - 体力系统")]
+    public float maxStamina = 100f;        // 最大体力
+    public float staminaRecoverSpeed = 12f;// 每秒恢复体力值
+    public float dashStaminaCost = 25f;    // 一次冲刺消耗体力
+
     [Header("玩家数值 - Health Stats")]
     public int maxHealth;
     public int currentHealth;
