@@ -51,18 +51,29 @@ public class PlayerAttact : MonoBehaviour
 
         Collider2D[] enemies = Physics2D.OverlapCircleAll(AttackPoint.position, StatsManager.Instance.weaponRange, StatsManager.Instance.enemyLayer);
 
-        if(enemies.Length > 0)
+        foreach (Collider2D enemyCollider in enemies)
         {
-            EnemyHealth enemyHealth = enemies[0].GetComponent<EnemyHealth>();
-            if (enemyHealth != null)
-                enemyHealth.ChangeEnemyHealth(StatsManager.Instance.damage);
+            BossHealth bossHealth = enemyCollider.GetComponentInParent<BossHealth>();
+            if (bossHealth != null)
+            {
+                bossHealth.TakeDamage(StatsManager.Instance.damage, transform.position);
+                return;
+            }
 
-            EnemyKnockBack enemyKnockBack = enemies[0].GetComponent<EnemyKnockBack>();
+            EnemyHealth enemyHealth = enemyCollider.GetComponentInParent<EnemyHealth>();
+            if (enemyHealth == null)
+                continue;
+
+            enemyHealth.ChangeEnemyHealth(StatsManager.Instance.damage);
+
+            EnemyKnockBack enemyKnockBack = enemyCollider.GetComponentInParent<EnemyKnockBack>();
             if (enemyKnockBack != null)
-                enemyKnockBack.EnemyKnockback(transform,StatsManager.Instance.knockbackForce,StatsManager.Instance.stunTime,StatsManager.Instance.knockbackTime);
+            {
+                enemyKnockBack.EnemyKnockback(transform, StatsManager.Instance.knockbackForce, StatsManager.Instance.stunTime, StatsManager.Instance.knockbackTime);
+            }
 
+            return;
         }
-
     }
 
     private void OnDrawGizmosSelected()
@@ -73,17 +84,5 @@ public class PlayerAttact : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(AttackPoint.position, StatsManager.Instance.weaponRange);
     }    
-
-    public class PlayerAttack : MonoBehaviour
-    {
-        public void OnAttack(InputValue value)
-        {
-            if (value.isPressed)
-            {
-                Debug.Log("鼠标左键攻击触发！");
-                // 在这里写你的攻击逻辑
-            }
-        }
-    }
 
 }

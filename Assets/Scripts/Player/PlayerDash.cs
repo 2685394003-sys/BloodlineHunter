@@ -6,7 +6,7 @@ using System.Collections;
 public class PlayerDash : MonoBehaviour
 {
     [Header("冲刺设置")]
-    public float dashDuration = 0.3f;
+    public float dashDuration; // 冲刺持续时间
     public InputAction shiftAction;
     public InputAction moveAction; // 和PlayerController共用同一套移动Action
 
@@ -16,7 +16,7 @@ public class PlayerDash : MonoBehaviour
     private Coroutine currentDashCoroutine;
 
     // 内置体力系统
-    [HideInInspector] public float currentStamina;
+    [HideInInspector] 
     private bool pauseStaminaRecover = false;
 
     // 缓存引用
@@ -30,7 +30,7 @@ public class PlayerDash : MonoBehaviour
 
         if (StatsManager.Instance != null)
         {
-            currentStamina = StatsManager.Instance.maxStamina;
+            StatsManager.Instance.currentStamina = StatsManager.Instance.maxStamina;
         }
     }
 
@@ -67,11 +67,11 @@ public class PlayerDash : MonoBehaviour
     private void StaminaRecoverTick()
     {
         if (StatsManager.Instance == null) return;
-        if (currentStamina >= StatsManager.Instance.maxStamina || pauseStaminaRecover)
+        if (StatsManager.Instance.currentStamina >= StatsManager.Instance.maxStamina || pauseStaminaRecover)
             return;
 
-        currentStamina += StatsManager.Instance.staminaRecoverSpeed * Time.deltaTime;
-        currentStamina = Mathf.Clamp(currentStamina, 0, StatsManager.Instance.maxStamina);
+        StatsManager.Instance.currentStamina += StatsManager.Instance.staminaRecoverSpeed * Time.deltaTime;
+        StatsManager.Instance.currentStamina = Mathf.Clamp(StatsManager.Instance.currentStamina, 0, StatsManager.Instance.maxStamina);
     }
 
     /// <summary>
@@ -80,11 +80,11 @@ public class PlayerDash : MonoBehaviour
     public bool TryConsumeStamina(float value)
     {
         if (StatsManager.Instance == null) return false;
-        if (currentStamina < value)
+        if (StatsManager.Instance.currentStamina < value)
             return false;
 
-        currentStamina -= value;
-        currentStamina = Mathf.Clamp(currentStamina, 0, StatsManager.Instance.maxStamina);
+        StatsManager.Instance.currentStamina -= value;
+        StatsManager.Instance.currentStamina = Mathf.Clamp(StatsManager.Instance.currentStamina, 0, StatsManager.Instance.maxStamina);
         return true;
     }
 

@@ -16,7 +16,12 @@ public class FlowFieldEnemy : MonoBehaviour
 
     void Update()
     {
-        if (flowField == null)
+        Chase();
+    }
+
+    void Chase()
+    {
+                if (flowField == null)
         {
             flowField = FindObjectOfType<FlowFieldManager>();
             return;

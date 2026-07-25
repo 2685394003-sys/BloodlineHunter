@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
-using System.Collections.Generic;
 
 public sealed class PlayerController : MonoBehaviour
 {
@@ -9,9 +8,11 @@ public sealed class PlayerController : MonoBehaviour
     public InputAction moveAction;
     public InputAction attackAction;
 
+    [Header("组件引用")]
     public Animator anim;
     public PlayerAttact playerAttack;
 
+    [Header("状态")]
     public bool isKnockedBack;
     public Vector3 knockbackVelocity;
 
@@ -24,7 +25,7 @@ public sealed class PlayerController : MonoBehaviour
     private float nextAttackTime;
 
     private Camera viewCamera;
-    private Vector2 cachedMoveInput; // 缓存移动输入
+    private Vector2 moveInput;
 
     private void Awake()
     {
@@ -33,52 +34,41 @@ public sealed class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // Update统一读取移动输入
-        cachedMoveInput = moveAction.ReadValue<Vector2>();
+        moveInput = moveAction.ReadValue<Vector2>();
     }
 
     private void FixedUpdate()
     {
-        // 击退状态：只执行击退位移，禁止玩家控制
         if (isKnockedBack)
         {
             transform.position += knockbackVelocity * Time.fixedDeltaTime;
             return;
         }
 
-        Vector2 input = cachedMoveInput;
+        float horizontal = moveInput.x;
+        float vertical = moveInput.y;
 
-        // 基于相机的俯视移动方向转换
-        viewCamera ??= Camera.main;
-        Vector3 cameraForward = viewCamera != null
-            ? Vector3.ProjectOnPlane(viewCamera.transform.forward, Vector3.up).normalized
-            : Vector3.forward;
-        Vector3 cameraRight = viewCamera != null
-            ? Vector3.ProjectOnPlane(viewCamera.transform.right, Vector3.up).normalized
-            : Vector3.right;
-        Vector3 rawMoveDir = (cameraForward * input.y + cameraRight * input.x);
-        if (rawMoveDir.sqrMagnitude > 0.001f)
-            rawMoveDir.Normalize();
+        // 俯视相机3D方向转换
+        Vector3 cameraForward = Vector3.ProjectOnPlane(viewCamera.transform.forward, Vector3.up).normalized;
+        Vector3 cameraRight = Vector3.ProjectOnPlane(viewCamera.transform.right, Vector3.up).normalized;
+        Vector3 moveDir = cameraForward * vertical + cameraRight * horizontal;
+        if (moveDir.sqrMagnitude > 0.001f)
+            moveDir.Normalize();
 
-        // 角色左右翻转
-        float horizontalInput = input.x;
-        if ((horizontalInput > 0 && transform.localScale.x < 0) || (horizontalInput < 0 && transform.localScale.x > 0))
+        // 角色翻转
+        if ((horizontal > 0 && transform.localScale.x < 0) || (horizontal < 0 && transform.localScale.x > 0))
         {
             Flip();
         }
 
-        // 动画参数
-        if (anim != null)
-        {
-            anim.SetFloat("horizontal", horizontalInput);
-            anim.SetFloat("vertical", input.y);
-        }
+        // 同步动画移动参数
+        anim.SetFloat("horizontal", horizontal);
+        anim.SetFloat("vertical", vertical);
 
-        // 移动执行
         if (StatsManager.Instance != null)
         {
             float speed = StatsManager.Instance.speed;
-            transform.position += rawMoveDir * speed * Time.fixedDeltaTime;
+            transform.position += moveDir * speed * Time.fixedDeltaTime;
         }
     }
 
@@ -104,57 +94,31 @@ public sealed class PlayerController : MonoBehaviour
         isKnockedBack = false;
     }
 
-    public void Attack(InputAction.CallbackContext ctx)
+    /// <summary>
+    /// 鼠标左键按下：仅触发攻击动画，冷却锁在这里
+    /// </summary>
+    public void AttackTrigger(InputAction.CallbackContext ctx)
     {
         if (Time.time < nextAttackTime)
             return;
+        if (isKnockedBack)
+            return;
 
         nextAttackTime = Time.time + attackCooldown;
-        if (playerAttack != null)
-        {
-            playerAttack.Attack();
-        }
-
-        Vector3 origin = transform.position + facingDirection * attackRange;
-        Collider[] hits = Physics.OverlapSphere(
-            origin,
-            attackRadius,
-            ~0,
-            QueryTriggerInteraction.Collide);
-        HashSet<BossHealth> damagedBosses = new();
-
-        foreach (Collider hit in hits)
-        {
-            BossHealth bossHealth = hit.GetComponentInParent<BossHealth>();
-            if (bossHealth != null && damagedBosses.Add(bossHealth))
-            {
-                int playerDamage = StatsManager.Instance != null
-                    ? Mathf.Max(1, StatsManager.Instance.damage)
-                    : 1;
-                bossHealth.TakeDamage(playerDamage, transform.position);
-                continue;
-            }
-
-            ChasingEnemy enemy = hit.GetComponentInParent<ChasingEnemy>();
-            if (enemy != null)
-            {
-                enemy.ReceiveHit();
-            }
-        }
+        playerAttack.Attack(); // 调用另一个脚本攻击
     }
 
     private void OnEnable()
     {
         moveAction.Enable();
         attackAction.Enable();
-        attackAction.performed += Attack;
+        attackAction.performed += AttackTrigger;
     }
 
     private void OnDisable()
     {
         moveAction.Disable();
         attackAction.Disable();
-        attackAction.performed -= Attack;
+        attackAction.performed -= AttackTrigger;
     }
-
 }

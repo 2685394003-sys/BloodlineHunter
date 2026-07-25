@@ -5,9 +5,13 @@ using UnityEngine;
 public class EnemyMovement : MonoBehaviour
 {
     private EnemyState enemyState;
+    private FlowFieldManager flowField;
+    private Vector3 smoothDirection;
     private float shoottimer;
+    public float dirBlendSpeed = 7f;
+    public float turnSmooth = 6f;
 
-    private Rigidbody2D rb;
+    private Rigidbody rb;
     public Transform EnemyDetectionPonint;
     private Transform player;
     private Animator anim;
@@ -16,9 +20,11 @@ public class EnemyMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
         ChangeState(EnemyState.Idle);
+        flowField = FindObjectOfType<FlowFieldManager>();
+        smoothDirection = Vector3.forward;
     }
 
     // Update is called once per frame
@@ -26,7 +32,7 @@ public class EnemyMovement : MonoBehaviour
     {
         if (enemyState != EnemyState.Knockback)
         {
-            if(player != null && shoottimer <= 0 && Vector2.Distance(transform.position, player.position) > StatsManager.Instance.enemyshootRange)
+            if(player != null && shoottimer <= 0 && Vector3.Distance(transform.position, player.position) > StatsManager.Instance.enemyshootRange)
             {
                 Stop();
                 ChangeState(EnemyState.isShooting);
@@ -46,44 +52,41 @@ public class EnemyMovement : MonoBehaviour
                 shoottimer -= Time.deltaTime;
             }
 
-
-            if (enemyState == EnemyState.isChasing && Vector2.Distance(transform.position, player.position) > StatsManager.Instance.enemyAttackRange)
+            // 移除追击距离限制，只要处于追逐状态就持续执行流场寻路
+            if (enemyState == EnemyState.isChasing)
             {
                 Chase();
             }
             else if(enemyState == EnemyState.isAttacking)
             {
-                rb.linearVelocity = Vector2.zero;
+                rb.linearVelocity = Vector3.zero;
             }
-            
         }
     }
 
     private void CheckForPlayer()
     {   
-        Collider2D[] hits = Physics2D.OverlapCircleAll(EnemyDetectionPonint.position,StatsManager.Instance.enemyplayerDetectRange,StatsManager.Instance.playerLayer);
+        Collider[] hits = Physics.OverlapSphere(EnemyDetectionPonint.position,StatsManager.Instance.enemyplayerDetectRange,StatsManager.Instance.playerLayer);
         
         if(hits.Length > 0)
         {
             player = hits[0].transform;
         
-            if(Vector2.Distance(transform.position, player.position) <= StatsManager.Instance.enemyAttackRange && StatsManager.Instance.enemyattaCooldownTimer <= 0)
+            if(Vector3.Distance(transform.position, player.position) <= StatsManager.Instance.enemyAttackRange && StatsManager.Instance.enemyattaCooldownTimer <= 0)
             {
                 Stop();
                 ChangeState(EnemyState.isAttacking);
-               StatsManager.Instance.enemyattaCooldownTimer = StatsManager.Instance.enemyattaCooldown;
+                StatsManager.Instance.enemyattaCooldownTimer = StatsManager.Instance.enemyattaCooldown;
             }
-
-            else if(Vector2.Distance(transform.position, player.position) > StatsManager.Instance.enemyAttackRange && enemyState != EnemyState.isAttacking && enemyState != EnemyState.isShooting)
+            else if(enemyState != EnemyState.isAttacking && enemyState != EnemyState.isShooting)
             {
                 ChangeState(EnemyState.isChasing);
                 // 玩家重新进入，立刻停止减速协程，恢复追逐
                 if (slowCoroutine != null)
                 {
-                StopCoroutine(slowCoroutine);
-                slowCoroutine = null;
+                    StopCoroutine(slowCoroutine);
+                    slowCoroutine = null;
                 }
-
             }
         }
         else
@@ -91,23 +94,22 @@ public class EnemyMovement : MonoBehaviour
             ChangeState(EnemyState.Idle);
             // 丢失玩家，开启线性减速协程
             Stop();
-
         }
     }
 
-     // 线性匀减速，一次执行到停止就结束，不占用Update
+    // 线性匀减速，一次执行到停止就结束，不占用Update
     IEnumerator SlowDownToStop()
     {
-        Vector2 currentVel = rb.linearVelocity;
+        Vector3 currentVel = rb.linearVelocity;
         // 持续匀速减小速度，直到接近0
         while (currentVel.magnitude > 0.05f)
         {
-            currentVel = Vector2.MoveTowards(currentVel, Vector2.zero, StatsManager.Instance.slowDeceleration * Time.deltaTime);
+            currentVel = Vector3.MoveTowards(currentVel, Vector3.zero, StatsManager.Instance.slowDeceleration * Time.deltaTime);
             rb.linearVelocity = currentVel;
             yield return null; // 等待下一帧再执行
         }
         // 速度几乎为0，直接清零彻底停止
-        rb.linearVelocity = Vector2.zero;
+        rb.linearVelocity = Vector3.zero;
         slowCoroutine = null;
     }
 
@@ -123,7 +125,6 @@ public class EnemyMovement : MonoBehaviour
         else if (enemyState == EnemyState.isShooting)
             anim.SetBool("isShooting", false);
 
-
         //更新当前状态
         enemyState = newState;
 
@@ -136,27 +137,35 @@ public class EnemyMovement : MonoBehaviour
             anim.SetBool("isAttacking", true);
         else if (enemyState == EnemyState.isShooting)
             anim.SetBool("isShooting", true);
-
     }
 
     void Chase()
     {
-        if(Vector2.Distance(transform.position, player.transform.position) <= StatsManager.Instance.enemyAttackRange && StatsManager.Instance.enemyattaCooldownTimer <= 0)
+        // 流场为空自动查找
+        if (flowField == null)
         {
-            ChangeState(EnemyState.isAttacking);
-            StatsManager.Instance.enemyattaCooldownTimer = StatsManager.Instance.enemyattaCooldown;
+            flowField = FindObjectOfType<FlowFieldManager>();
+            return;
         }
 
-        Vector2 direction = (player.position - transform.position).normalized;
-        rb.linearVelocity = direction * StatsManager.Instance.enemyspeed;
+        Vector3 rawDir = flowField.GetFlowDirection(transform.position);
+        // 流场失效兜底：使用脚本检测到的player
+        if(rawDir.magnitude < 0.01f && player != null)
+            rawDir = (player.position - transform.position).normalized;
 
-        // 翻转逻辑
-        float dirX = player.position.x - transform.position.x;
-        if(Mathf.Abs(dirX) > 0.01f)
+        // 方向平滑缓冲，消除跳变
+        smoothDirection = Vector3.Lerp(smoothDirection, rawDir.normalized, Time.deltaTime * dirBlendSpeed);
+
+        // 刚体物理移动（不再直接修改transform，解决刚体冲突无法移动）
+        rb.linearVelocity = smoothDirection * StatsManager.Instance.enemyspeed;
+
+        // 平滑水平旋转朝向前进方向
+        if(smoothDirection.magnitude > 0.01f)
         {
-            transform.localScale = new Vector3(-Mathf.Sign(dirX), 1, 1);
+            Vector3 flatDir = Vector3.ProjectOnPlane(smoothDirection, Vector3.up);
+            Quaternion targetRot = Quaternion.LookRotation(flatDir);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, Time.deltaTime * turnSmooth);
         }
-
     }
 
     void Stop()
@@ -168,8 +177,6 @@ public class EnemyMovement : MonoBehaviour
     {
         return player;
     }
-
-
 }
 
 public enum EnemyState

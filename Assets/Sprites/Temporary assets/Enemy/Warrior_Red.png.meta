@@ -312,9 +312,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 630
-        y: 1208
-        width: 62
-        height: 93
+        y: 1209
+        width: 100
+        height: 92
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -330,35 +330,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Warrior_Red_10
-      rect:
-        serializedVersion: 2
-        x: 695
-        y: 1233
-        width: 30
-        height: 55
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1342e7385f247d940886f78273434ce4
-      internalID: -1099102977
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: Warrior_Red_11
       rect:
         serializedVersion: 2
         x: 825
-        y: 1208
-        width: 59
-        height: 94
+        y: 1206
+        width: 93
+        height: 96
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -369,28 +347,6 @@ TextureImporter:
       bones: []
       spriteID: 9dba2ae29903ba84ea6b6416957d9993
       internalID: -656624765
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Warrior_Red_12
-      rect:
-        serializedVersion: 2
-        x: 884
-        y: 1228
-        width: 30
-        height: 55
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 4a163f1298d9f9b4faa0c318accdbfe6
-      internalID: 2009642196
       vertices: []
       indices: 
       edges: []
@@ -443,10 +399,10 @@ TextureImporter:
       name: Warrior_Red_15
       rect:
         serializedVersion: 2
-        x: 249
-        y: 1016
-        width: 62
-        height: 97
+        x: 242
+        y: 1014
+        width: 80
+        height: 121
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -462,35 +418,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Warrior_Red_16
-      rect:
-        serializedVersion: 2
-        x: 297
-        y: 1068
-        width: 23
-        height: 60
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: cc646c60d306f49458e5e0efeb9af22a
-      internalID: -185189258
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: Warrior_Red_17
       rect:
         serializedVersion: 2
         x: 441
         y: 1016
-        width: 62
-        height: 97
+        width: 82
+        height: 121
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -506,35 +440,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Warrior_Red_18
-      rect:
-        serializedVersion: 2
-        x: 489
-        y: 1068
-        width: 23
-        height: 60
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 3751fd93bc80dff4b863d64b2957f959
-      internalID: 1796073513
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: Warrior_Red_19
       rect:
         serializedVersion: 2
         x: 652
-        y: 1016
-        width: 51
-        height: 88
+        y: 1010
+        width: 110
+        height: 121
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -545,28 +457,6 @@ TextureImporter:
       bones: []
       spriteID: d1af3a0efd77f044389fb4f28f11a19f
       internalID: -1427310863
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Warrior_Red_20
-      rect:
-        serializedVersion: 2
-        x: 697
-        y: 1015
-        width: 62
-        height: 112
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7110cca973849774a83b9cb039504be3
-      internalID: -1376610883
       vertices: []
       indices: 
       edges: []
@@ -709,11 +599,11 @@ TextureImporter:
         serializedVersion: 2
         x: 828
         y: 824
-        width: 66
+        width: 130
         height: 94
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 0, y: 0, z: 5, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -721,50 +611,6 @@ TextureImporter:
       bones: []
       spriteID: cd4d05219fb5d774b8efa28d73446ba4
       internalID: 537042981
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Warrior_Red_28
-      rect:
-        serializedVersion: 2
-        x: 897
-        y: 833
-        width: 53
-        height: 67
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: cab0ce2228e09254f903bfd412d7573d
-      internalID: -804921148
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Warrior_Red_29
-      rect:
-        serializedVersion: 2
-        x: 905
-        y: 825
-        width: 14
-        height: 34
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9a4c04f9b028c5540935c244bebe73ae
-      internalID: 1040537845
       vertices: []
       indices: 
       edges: []
