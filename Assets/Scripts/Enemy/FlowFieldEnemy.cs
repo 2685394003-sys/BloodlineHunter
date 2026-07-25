@@ -16,6 +16,7 @@ public class FlowFieldEnemy : MonoBehaviour
     private Animator anim;
     private Transform player;
     private Coroutine slowCoroutine;
+    private float attackCooldownTimer; // 每只小怪自己的攻击冷却计时器(上限由StatsManager.enemyattaCooldown统一管理)
 
     void Start()
     {
@@ -32,9 +33,9 @@ public class FlowFieldEnemy : MonoBehaviour
         {
             CheckForPlayer();
 
-            if (StatsManager.Instance.enemyattaCooldownTimer > 0)
+            if (attackCooldownTimer > 0)
             {
-                StatsManager.Instance.enemyattaCooldownTimer -= Time.deltaTime;
+                attackCooldownTimer -= Time.deltaTime;
             }
 
             if (enemyState == EnemyState.isChasing)
@@ -131,11 +132,11 @@ public class FlowFieldEnemy : MonoBehaviour
         if (distance <= StatsManager.Instance.enemyAttackRange)
         {
             // CD就绪 → 攻击
-            if (StatsManager.Instance.enemyattaCooldownTimer <= 0)
+            if (attackCooldownTimer <= 0)
             {
                 Stop();
                 ChangeState(EnemyState.isAttacking);
-                StatsManager.Instance.enemyattaCooldownTimer = StatsManager.Instance.enemyattaCooldown;
+                attackCooldownTimer = StatsManager.Instance.enemyattaCooldown;
             }
             // CD没就绪 → 切Idle待机，不再追击
             else

@@ -41,7 +41,6 @@ public class StatsManager : MonoBehaviour
     public float enemyAttackRange;
     public float enemyweaponRange;
     public float enemyattaCooldown;
-    public float enemyattaCooldownTimer;
     public float enemyknockbackForce;
     public float enemyknockbackTime;
     public float enemystunTime;
