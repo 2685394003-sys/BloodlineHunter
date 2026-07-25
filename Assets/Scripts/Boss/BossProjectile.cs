@@ -56,18 +56,27 @@ public sealed class BossProjectile : MonoBehaviour
 
         if (IsInLayerMask(other.gameObject.layer, playerLayer))
         {
-            PlayerHealth playerHealth = other.GetComponentInParent<PlayerHealth>();
-            if (playerHealth == null)
+            if (!BossCombatTarget.TryGetInParent(other, out IDamageable damageable))
+            {
+                BossCombatTarget.EnsurePlayerAdapter(other.transform.root, true);
+                BossCombatTarget.TryGetInParent(other, out damageable);
+            }
+
+            if (damageable == null)
             {
                 return;
             }
 
-            playerHealth.ChangeHealth(damage);
-
-            PlayerController playerController = playerHealth.GetComponent<PlayerController>();
-            if (playerController != null && playerController.gameObject.activeInHierarchy && knockback > 0f)
+            damageable.TakeDamage(damage);
+            Component damageComponent = damageable as Component;
+            if (damageComponent != null &&
+                knockback > 0f &&
+                BossCombatTarget.TryGetInParent(damageComponent, out IKnockbackReceiver receiver))
             {
-                playerController.Knockback(owner != null ? owner : transform, knockback, 0.18f);
+                receiver.ApplyKnockback(
+                    owner != null ? owner : transform,
+                    knockback,
+                    0.18f);
             }
 
             Destroy(gameObject);

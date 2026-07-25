@@ -12,14 +12,14 @@ public enum BossState
     Dead
 }
 
-[RequireComponent(typeof(BossStatsManager))]
+[RequireComponent(typeof(BossConfig))]
 [RequireComponent(typeof(BossHealth))]
 [RequireComponent(typeof(BossAttackController))]
 [RequireComponent(typeof(Rigidbody))]
 [DisallowMultipleComponent]
 public sealed class BossController : MonoBehaviour
 {
-    [SerializeField] private BossStatsManager stats;
+    [SerializeField] private BossConfig stats;
     [SerializeField] private BossHealth bossHealth;
     [SerializeField] private BossAttackController attackController;
     [SerializeField] private Rigidbody bossRigidbody;
@@ -32,6 +32,10 @@ public sealed class BossController : MonoBehaviour
     public BossState CurrentState { get; private set; } = BossState.Dormant;
     public float RemainingContractSeconds { get; private set; }
     public bool ContractCountdownActive { get; private set; }
+    public bool CombatEnabled => combatEnabled;
+    public Transform Player => player;
+    public BossHealth Health => bossHealth;
+    public BossAttackController Attacks => attackController;
 
     public event Action<float> ContractCountdownChanged;
     public event Action ContractCountdownExpired;
@@ -40,16 +44,17 @@ public sealed class BossController : MonoBehaviour
     private Coroutine phaseChangeCoroutine;
     private bool combatEnabled;
     private bool contractCountdownTriggered;
+    private bool runtimeSetupValidated;
     private Renderer[] visualRenderers = Array.Empty<Renderer>();
 
     private void Awake()
     {
-        stats ??= GetComponent<BossStatsManager>();
+        stats ??= GetComponent<BossConfig>();
         bossHealth ??= GetComponent<BossHealth>();
         attackController ??= GetComponent<BossAttackController>();
         bossRigidbody ??= GetComponent<Rigidbody>();
         bossCollider ??= GetComponent<Collider>();
-        animator ??= GetComponent<Animator>();
+        animator ??= GetComponentInChildren<Animator>(true);
         audioSource ??= GetComponent<AudioSource>();
         visualRoot ??= transform.Find("Visual");
 
@@ -73,12 +78,14 @@ public sealed class BossController : MonoBehaviour
 
         bossHealth.PhaseChangeStarted += HandlePhaseChangeStarted;
         bossHealth.Died += HandleDeath;
+        bossHealth.HealthChanged += HandleHealthChanged;
     }
 
     private IEnumerator Start()
     {
         ResolvePlayer();
         attackController.SetPlayer(player);
+        ValidateRuntimeSetup();
 
         if (stats.randomSpawnOnStart)
         {
@@ -168,6 +175,11 @@ public sealed class BossController : MonoBehaviour
             return;
         }
 
+        if (stats.logCombatEvents)
+        {
+            Debug.Log($"[Boss] 进入阶段 {newPhase}，当前生命 {bossHealth.CurrentHealth}/{bossHealth.MaxHealth}。", this);
+        }
+
         if (phaseChangeCoroutine != null)
         {
             StopCoroutine(phaseChangeCoroutine);
@@ -187,7 +199,7 @@ public sealed class BossController : MonoBehaviour
             audioSource.PlayOneShot(stats.phaseChangeClip);
         }
 
-        SetAnimatorTrigger("PhaseChange");
+        SetAnimatorTrigger(stats.phaseChangeTrigger);
 
         if (stats.clearObstaclesOnPhaseChange)
         {
@@ -218,7 +230,7 @@ public sealed class BossController : MonoBehaviour
             TeleportToRandomArenaPosition();
         }
 
-        SetAnimatorInteger("Phase", newPhase);
+        SetAnimatorInteger(stats.phaseParameter, newPhase);
 
         // 先清空引用，再完成阶段；这样单次超高伤害跨过多个阈值时，
         // BossHealth 可以立即排队进入下一个转阶段。
@@ -244,8 +256,13 @@ public sealed class BossController : MonoBehaviour
             contractCountdownTriggered = true;
             ContractCountdownActive = true;
             RemainingContractSeconds = stats.format5CountdownSeconds;
-            SetAnimatorTrigger("Format5");
+            SetAnimatorTrigger(stats.format5Trigger);
             ContractCountdownChanged?.Invoke(RemainingContractSeconds);
+
+            if (stats.logCombatEvents)
+            {
+                Debug.Log($"[Boss] 契约倒计时启动：{RemainingContractSeconds:0.0} 秒。", this);
+            }
         }
 
         if (!ContractCountdownActive)
@@ -273,6 +290,11 @@ public sealed class BossController : MonoBehaviour
         combatEnabled = false;
         CurrentState = BossState.Dead;
 
+        if (stats.logCombatEvents)
+        {
+            Debug.Log("[Boss] 已死亡，停止移动与攻击。", this);
+        }
+
         if (phaseChangeCoroutine != null)
         {
             StopCoroutine(phaseChangeCoroutine);
@@ -289,7 +311,7 @@ public sealed class BossController : MonoBehaviour
         }
 
         SetRenderersEnabled(true);
-        SetAnimatorTrigger("Death");
+        SetAnimatorTrigger(stats.deathTrigger);
 
         if (audioSource != null && stats.deathClip != null)
         {
@@ -309,15 +331,51 @@ public sealed class BossController : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    private void HandleHealthChanged(int currentHealth, int maxHealth)
+    {
+        if (stats != null && stats.logCombatEvents)
+        {
+            Debug.Log($"[Boss] 生命变化：{currentHealth}/{maxHealth}。", this);
+        }
+    }
+
     private void ResolvePlayer()
     {
         if (player != null && player.gameObject.activeInHierarchy)
         {
+            BossCombatTarget.EnsurePlayerAdapter(player, false);
             return;
         }
 
-        PlayerController playerController = FindAnyObjectByType<PlayerController>();
-        player = playerController != null ? playerController.transform : null;
+        GameObject taggedPlayer = null;
+        try
+        {
+            taggedPlayer = GameObject.FindGameObjectWithTag("Player");
+        }
+        catch (UnityException)
+        {
+            // 项目没有 Player Tag 时继续按 Layer 搜索。
+        }
+
+        if (taggedPlayer == null && stats != null)
+        {
+            Collider[] colliders = FindObjectsByType<Collider>(FindObjectsInactive.Exclude);
+            foreach (Collider candidate in colliders)
+            {
+                if (candidate != null &&
+                    (stats.playerLayer.value & (1 << candidate.gameObject.layer)) != 0)
+                {
+                    taggedPlayer = candidate.transform.root.gameObject;
+                    break;
+                }
+            }
+        }
+
+        player = taggedPlayer != null ? taggedPlayer.transform : null;
+        if (player != null)
+        {
+            BossCombatTarget.EnsurePlayerAdapter(player, true);
+        }
     }
 
     private bool IsBossVisibleToCamera()
@@ -419,10 +477,9 @@ public sealed class BossController : MonoBehaviour
             return;
         }
 
-        PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
-        if (playerHealth != null)
+        if (BossCombatTarget.TryGetInParent(player, out IForceKillable killable))
         {
-            playerHealth.ForceDeath();
+            killable.ForceKill();
         }
         else
         {
@@ -441,8 +498,10 @@ public sealed class BossController : MonoBehaviour
 
     private void EnsureDebugVisual()
     {
-        if (!stats.createDebugVisualIfMissing ||
-            GetComponentInChildren<Renderer>(true) != null)
+        Renderer existingVisual = visualRoot != null
+            ? visualRoot.GetComponentInChildren<Renderer>(true)
+            : GetComponentInChildren<Renderer>(true);
+        if (!stats.createDebugVisualIfMissing || existingVisual != null)
         {
             return;
         }
@@ -468,6 +527,228 @@ public sealed class BossController : MonoBehaviour
         }
     }
 
+    private void ValidateRuntimeSetup()
+    {
+        if (runtimeSetupValidated)
+        {
+            return;
+        }
+
+        runtimeSetupValidated = true;
+        if (player == null)
+        {
+            Debug.LogError(
+                "[Boss 配置] 找不到玩家。请给玩家设置 Player Tag 或放在 BossConfig.playerLayer 指定的层。",
+                this);
+        }
+        else
+        {
+            BossCombatTarget.EnsurePlayerAdapter(player, true);
+        }
+
+        if (attackController != null)
+        {
+            string mountIssue = attackController.GetMountConfigurationIssue();
+            if (!string.IsNullOrEmpty(mountIssue))
+            {
+                Debug.LogError($"[Boss 配置] {mountIssue}", this);
+            }
+        }
+
+        if (animator == null)
+        {
+            Debug.LogWarning("[Boss 配置] 未找到 Animator。战斗逻辑可运行，但不会播放动画。", this);
+        }
+        else if (animator.runtimeAnimatorController == null)
+        {
+            Debug.LogWarning(
+                "[Boss 配置] Animator 没有绑定 Controller。战斗逻辑可运行，动画触发器暂不生效。",
+                animator);
+        }
+        else
+        {
+            ValidateAnimatorParameter(stats.phaseParameter, AnimatorControllerParameterType.Int);
+            ValidateAnimatorParameter(stats.phaseChangeTrigger, AnimatorControllerParameterType.Trigger);
+            ValidateAnimatorParameter(stats.deathTrigger, AnimatorControllerParameterType.Trigger);
+            ValidateAnimatorParameter(stats.format1Trigger, AnimatorControllerParameterType.Trigger);
+            ValidateAnimatorParameter(stats.format2Trigger, AnimatorControllerParameterType.Trigger);
+            ValidateAnimatorParameter(stats.format3Trigger, AnimatorControllerParameterType.Trigger);
+            ValidateAnimatorParameter(stats.format4Trigger, AnimatorControllerParameterType.Trigger);
+            ValidateAnimatorParameter(stats.format5Trigger, AnimatorControllerParameterType.Trigger);
+            ValidateAnimatorParameter(stats.format6Trigger, AnimatorControllerParameterType.Trigger);
+        }
+
+        if (stats.logCombatEvents)
+        {
+            Debug.Log(
+                $"[Boss] 初始化完成。玩家={(player != null ? player.name : "未找到")}，" +
+                $"Animator={(animator != null && animator.runtimeAnimatorController != null ? "已配置" : "未配置")}。",
+                this);
+        }
+    }
+
+    private void ValidateAnimatorParameter(
+        string parameterName,
+        AnimatorControllerParameterType expectedType)
+    {
+        if (string.IsNullOrWhiteSpace(parameterName))
+        {
+            return;
+        }
+
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        {
+            if (parameter.name == parameterName)
+            {
+                if (parameter.type != expectedType)
+                {
+                    Debug.LogError(
+                        $"[Boss Animator] 参数 {parameterName} 类型错误：需要 {expectedType}，当前是 {parameter.type}。",
+                        animator);
+                }
+
+                return;
+            }
+        }
+
+        Debug.LogError(
+            $"[Boss Animator] 缺少参数 {parameterName}（{expectedType}）。请修改 Animator Controller 或 BossConfig 中的参数名。",
+            animator);
+    }
+
+    [ContextMenu("Boss/自动配置五个子节点")]
+    private void ConfigureFiveChildNodes()
+    {
+        stats ??= GetComponent<BossConfig>();
+        bossHealth ??= GetComponent<BossHealth>();
+        attackController ??= GetComponent<BossAttackController>();
+        bossRigidbody ??= GetComponent<Rigidbody>();
+        bossCollider ??= GetComponent<Collider>();
+        audioSource ??= GetComponent<AudioSource>();
+
+        visualRoot = FindOrCreateChild("Visual");
+        Transform meleePoint = FindOrCreateChild("MeleePoint");
+        Transform projectileOrigin = FindOrCreateChild("ProjectileOrigin");
+        Transform groundIndicator = FindOrCreateChild("GroundIndicator");
+        Transform vfxRoot = FindOrCreateChild("VFXRoot");
+
+        meleePoint.localPosition = new Vector3(0f, 0f, 2f);
+        projectileOrigin.localPosition = new Vector3(0f, 0.8f, 1.2f);
+        groundIndicator.localPosition = Vector3.zero;
+        vfxRoot.localPosition = new Vector3(0f, 0.5f, 0f);
+
+        animator ??= visualRoot.GetComponentInChildren<Animator>(true);
+        animator ??= GetComponent<Animator>();
+        attackController?.ConfigureMounts(
+            meleePoint,
+            projectileOrigin,
+            groundIndicator,
+            vfxRoot,
+            animator);
+
+#if UNITY_EDITOR
+        if (!Application.isPlaying)
+        {
+            UnityEditor.EditorUtility.SetDirty(this);
+            UnityEditor.EditorUtility.SetDirty(attackController);
+        }
+#endif
+
+        Debug.Log(
+            "[Boss 配置] 五个子节点已连线：Visual=表现，MeleePoint=近战中心，" +
+            "ProjectileOrigin=弹丸起点，GroundIndicator=预警父节点，VFXRoot=特效父节点。",
+            this);
+    }
+
+    private Transform FindOrCreateChild(string childName)
+    {
+        Transform child = transform.Find(childName);
+        if (child != null)
+        {
+            return child;
+        }
+
+        GameObject childObject = new(childName);
+#if UNITY_EDITOR
+        if (!Application.isPlaying)
+        {
+            UnityEditor.Undo.RegisterCreatedObjectUndo(childObject, $"创建 {childName}");
+        }
+#endif
+        childObject.layer = gameObject.layer;
+        child = childObject.transform;
+        child.SetParent(transform, false);
+        return child;
+    }
+
+    private void OnGUI()
+    {
+        if (stats == null || !stats.showDebugPanel)
+        {
+            return;
+        }
+
+        float x = stats.debugPanelPosition.x;
+        float y = stats.debugPanelPosition.y;
+        const float width = 360f;
+        GUI.Box(new Rect(x, y, width, 218f), "Boss 运行时调试");
+
+        string animatorState = animator == null
+            ? "无 Animator"
+            : animator.runtimeAnimatorController == null ? "未绑定 Controller" : "已配置";
+        string healthText = bossHealth == null
+            ? "生命组件缺失"
+            : $"{bossHealth.CurrentHealth}/{bossHealth.MaxHealth}  阶段 {bossHealth.CurrentPhase}";
+
+        GUI.Label(new Rect(x + 12f, y + 26f, width - 24f, 22f), $"状态：{CurrentState}  战斗：{combatEnabled}");
+        GUI.Label(new Rect(x + 12f, y + 48f, width - 24f, 22f), $"生命：{healthText}");
+        GUI.Label(
+            new Rect(x + 12f, y + 70f, width - 24f, 22f),
+            $"玩家：{(player != null ? player.name : "未找到")}  动画：{animatorState}");
+        GUI.Label(
+            new Rect(x + 12f, y + 92f, width - 24f, 22f),
+            $"最近攻击：{(attackController != null ? attackController.LastAttackName : "无")}");
+
+        bool previousEnabled = GUI.enabled;
+        GUI.enabled = Application.isPlaying && bossHealth != null && !bossHealth.IsDead;
+        if (GUI.Button(new Rect(x + 12f, y + 120f, 104f, 28f), $"Boss -{stats.debugDamageAmount} HP"))
+        {
+            bossHealth.DebugApplyDamage(stats.debugDamageAmount);
+        }
+
+        if (GUI.Button(new Rect(x + 124f, y + 120f, 104f, 28f), "直接击杀 Boss"))
+        {
+            bossHealth.DebugApplyDamage(Mathf.Max(1, bossHealth.CurrentHealth));
+        }
+
+        GUI.enabled = Application.isPlaying && attackController != null && player != null &&
+                      bossHealth != null && !bossHealth.IsDead;
+        BossAttackType[] debugAttacks =
+        {
+            BossAttackType.Format1,
+            BossAttackType.Format2,
+            BossAttackType.Format3,
+            BossAttackType.Format4,
+            BossAttackType.Format6
+        };
+        for (int i = 0; i < debugAttacks.Length; i++)
+        {
+            float buttonWidth = 64f;
+            float buttonX = x + 12f + i * (buttonWidth + 4f);
+            if (GUI.Button(
+                    new Rect(buttonX, y + 158f, buttonWidth, 28f),
+                    $"攻击 {((int)debugAttacks[i])}"))
+            {
+                attackController.DebugStartAttack(debugAttacks[i]);
+            }
+        }
+
+        GUI.enabled = previousEnabled;
+        GUI.Label(
+            new Rect(x + 12f, y + 190f, width - 24f, 22f),
+            "提示：Animator 未配置不会阻止移动、伤害、阶段和弹幕测试。");
+    }
+
     private void SetRenderersEnabled(bool value)
     {
         foreach (Renderer targetRenderer in visualRenderers)
@@ -481,7 +762,7 @@ public sealed class BossController : MonoBehaviour
 
     private void SetAnimatorTrigger(string triggerName)
     {
-        if (animator == null)
+        if (animator == null || string.IsNullOrWhiteSpace(triggerName))
         {
             return;
         }
@@ -499,7 +780,7 @@ public sealed class BossController : MonoBehaviour
 
     private void SetAnimatorInteger(string parameterName, int value)
     {
-        if (animator == null)
+        if (animator == null || string.IsNullOrWhiteSpace(parameterName))
         {
             return;
         }
@@ -521,23 +802,57 @@ public sealed class BossController : MonoBehaviour
         {
             bossHealth.PhaseChangeStarted -= HandlePhaseChangeStarted;
             bossHealth.Died -= HandleDeath;
+            bossHealth.HealthChanged -= HandleHealthChanged;
         }
     }
 
     private void OnDrawGizmosSelected()
     {
-        BossStatsManager manager = stats != null ? stats : GetComponent<BossStatsManager>();
-        if (manager == null)
+        BossConfig config = stats != null ? stats : GetComponent<BossConfig>();
+        if (config == null || !config.drawCombatGizmos)
         {
             return;
         }
 
         Gizmos.color = new Color(0.7f, 0f, 0f, 0.25f);
         Gizmos.DrawWireCube(
-            manager.arenaCenter,
-            new Vector3(manager.arenaHalfSize.x * 2f, 0.1f, manager.arenaHalfSize.y * 2f));
+            config.arenaCenter,
+            new Vector3(config.arenaHalfSize.x * 2f, 0.1f, config.arenaHalfSize.y * 2f));
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, manager.stoppingDistance);
+        Gizmos.DrawWireSphere(transform.position, config.stoppingDistance);
+
+        BossAttackController attacks = attackController != null
+            ? attackController
+            : GetComponent<BossAttackController>();
+        if (attacks == null)
+        {
+            return;
+        }
+
+        if (attacks.MeleePoint != null)
+        {
+            Gizmos.color = new Color(1f, 0.35f, 0.1f, 0.9f);
+            Gizmos.DrawWireSphere(attacks.MeleePoint.position, config.format1Radius);
+        }
+
+        if (attacks.ProjectileOrigin != null)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(attacks.ProjectileOrigin.position, 0.12f);
+            Gizmos.DrawRay(attacks.ProjectileOrigin.position, transform.forward * 2f);
+        }
+
+        if (attacks.GroundIndicator != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(attacks.GroundIndicator.position, 0.18f);
+        }
+
+        if (attacks.VFXRoot != null)
+        {
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawWireCube(attacks.VFXRoot.position, Vector3.one * 0.3f);
+        }
     }
 }

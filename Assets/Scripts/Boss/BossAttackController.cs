@@ -14,16 +14,24 @@ public enum BossAttackType
 [DisallowMultipleComponent]
 public sealed class BossAttackController : MonoBehaviour
 {
-    [SerializeField] private BossStatsManager stats;
+    [SerializeField] private BossConfig stats;
     [SerializeField] private Transform player;
     [SerializeField] private Transform meleePoint;
     [SerializeField] private Transform projectileOrigin;
     [SerializeField] private Transform groundIndicator;
+    [SerializeField] private Transform vfxRoot;
     [SerializeField] private Rigidbody bossRigidbody;
     [SerializeField] private Animator animator;
     [SerializeField] private AudioSource audioSource;
 
     public bool IsBusy { get; private set; }
+    public BossAttackType? LastAttack { get; private set; }
+    public string LastAttackName => LastAttack.HasValue ? $"Format{(int)LastAttack.Value}" : "无";
+    public int AttacksStarted { get; private set; }
+    public Transform MeleePoint => meleePoint;
+    public Transform ProjectileOrigin => projectileOrigin;
+    public Transform GroundIndicator => groundIndicator;
+    public Transform VFXRoot => vfxRoot;
 
     private readonly Dictionary<BossAttackType, float> readyTimes = new();
     private readonly List<GameObject> activeTelegraphs = new();
@@ -32,17 +40,64 @@ public sealed class BossAttackController : MonoBehaviour
 
     private void Awake()
     {
-        stats ??= GetComponent<BossStatsManager>();
+        stats ??= GetComponent<BossConfig>();
         bossRigidbody ??= GetComponent<Rigidbody>();
-        animator ??= GetComponent<Animator>();
+        animator ??= GetComponentInChildren<Animator>(true);
         audioSource ??= GetComponent<AudioSource>();
-        meleePoint ??= transform;
-        projectileOrigin ??= transform;
+        meleePoint ??= transform.Find("MeleePoint");
+        projectileOrigin ??= transform.Find("ProjectileOrigin");
+        groundIndicator ??= transform.Find("GroundIndicator");
+        vfxRoot ??= transform.Find("VFXRoot");
     }
 
     public void SetPlayer(Transform newPlayer)
     {
         player = newPlayer;
+    }
+
+    public void ConfigureMounts(
+        Transform newMeleePoint,
+        Transform newProjectileOrigin,
+        Transform newGroundIndicator,
+        Transform newVfxRoot,
+        Animator newAnimator)
+    {
+        meleePoint = newMeleePoint;
+        projectileOrigin = newProjectileOrigin;
+        groundIndicator = newGroundIndicator;
+        vfxRoot = newVfxRoot;
+        if (newAnimator != null)
+        {
+            animator = newAnimator;
+        }
+    }
+
+    public string GetMountConfigurationIssue()
+    {
+        List<string> missing = new();
+        if (meleePoint == null)
+        {
+            missing.Add("MeleePoint");
+        }
+
+        if (projectileOrigin == null)
+        {
+            missing.Add("ProjectileOrigin");
+        }
+
+        if (groundIndicator == null)
+        {
+            missing.Add("GroundIndicator");
+        }
+
+        if (vfxRoot == null)
+        {
+            missing.Add("VFXRoot");
+        }
+
+        return missing.Count == 0
+            ? string.Empty
+            : $"以下 Boss 子节点未连接：{string.Join("、", missing)}。在 BossController 组件菜单执行“自动配置五个子节点”。";
     }
 
     public bool TryStartAttack(int phase, bool bossVisible, float playerDistance)
@@ -59,6 +114,55 @@ public sealed class BossAttackController : MonoBehaviour
 
         attackCoroutine = StartCoroutine(AttackWrapper(attackType, !bossVisible));
         return true;
+    }
+
+    public bool DebugStartAttack(BossAttackType attackType)
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[Boss 调试] 请先进入 Play 模式再测试攻击。", this);
+            return false;
+        }
+
+        if (player == null)
+        {
+            Debug.LogError("[Boss 调试] 尚未找到玩家，不能强制攻击。", this);
+            return false;
+        }
+
+        CancelCurrentAttack();
+        attackCoroutine = StartCoroutine(AttackWrapper(attackType, false));
+        return true;
+    }
+
+    [ContextMenu("调试/强制攻击 1（近战）")]
+    private void DebugFormat1()
+    {
+        DebugStartAttack(BossAttackType.Format1);
+    }
+
+    [ContextMenu("调试/强制攻击 2（弹幕）")]
+    private void DebugFormat2()
+    {
+        DebugStartAttack(BossAttackType.Format2);
+    }
+
+    [ContextMenu("调试/强制攻击 3（十字）")]
+    private void DebugFormat3()
+    {
+        DebugStartAttack(BossAttackType.Format3);
+    }
+
+    [ContextMenu("调试/强制攻击 4（全屏）")]
+    private void DebugFormat4()
+    {
+        DebugStartAttack(BossAttackType.Format4);
+    }
+
+    [ContextMenu("调试/强制攻击 6（冲刺）")]
+    private void DebugFormat6()
+    {
+        DebugStartAttack(BossAttackType.Format6);
     }
 
     public void CancelCurrentAttack()
@@ -159,7 +263,14 @@ public sealed class BossAttackController : MonoBehaviour
     private IEnumerator AttackWrapper(BossAttackType attackType, bool offscreenAttack)
     {
         IsBusy = true;
+        LastAttack = attackType;
+        AttacksStarted++;
         PlayAttackFeedback(attackType);
+
+        if (stats.logCombatEvents)
+        {
+            Debug.Log($"[Boss] 开始攻击 Format{(int)attackType}（第 {AttacksStarted} 次攻击）。", this);
+        }
 
         switch (attackType)
         {
@@ -190,16 +301,17 @@ public sealed class BossAttackController : MonoBehaviour
 
     private IEnumerator Format1Routine()
     {
-        Vector3 targetPosition = GetGroundPosition(player.position);
-        LineRenderer warning = CreateCircleTelegraph(targetPosition, stats.format1Radius * 0.15f);
+        Vector3 attackCenter = GetGroundPosition(
+            meleePoint != null ? meleePoint.position : transform.position);
+        LineRenderer warning = CreateCircleTelegraph(attackCenter, stats.format1Radius * 0.15f);
         yield return GrowCircleRoutine(
             warning,
-            targetPosition,
+            attackCenter,
             stats.format1Radius,
             stats.format1WarningTime);
 
         ApplySphereDamage(
-            targetPosition,
+            attackCenter,
             stats.format1Radius,
             stats.format1Damage,
             stats.format1Knockback);
@@ -440,7 +552,7 @@ public sealed class BossAttackController : MonoBehaviour
 
     private void ApplyDamageToUniquePlayers(IEnumerable<Collider> hits, int damage, float knockback)
     {
-        HashSet<PlayerHealth> damagedPlayers = new();
+        HashSet<Component> damagedTargets = new();
         foreach (Collider hit in hits)
         {
             if (hit == null)
@@ -448,18 +560,26 @@ public sealed class BossAttackController : MonoBehaviour
                 continue;
             }
 
-            PlayerHealth playerHealth = hit.GetComponentInParent<PlayerHealth>();
-            if (playerHealth == null || !damagedPlayers.Add(playerHealth))
+            if (!BossCombatTarget.TryGetInParent(hit, out IDamageable damageable))
+            {
+                BossCombatTarget.EnsurePlayerAdapter(hit.transform.root, true);
+                BossCombatTarget.TryGetInParent(hit, out damageable);
+            }
+
+            Component damageComponent = damageable as Component;
+            if (damageable == null ||
+                damageComponent == null ||
+                !damagedTargets.Add(damageComponent))
             {
                 continue;
             }
 
-            playerHealth.ChangeHealth(damage);
+            damageable.TakeDamage(damage);
 
-            PlayerController playerController = playerHealth.GetComponent<PlayerController>();
-            if (playerController != null && playerController.gameObject.activeInHierarchy && knockback > 0f)
+            if (knockback > 0f &&
+                BossCombatTarget.TryGetInParent(damageComponent, out IKnockbackReceiver receiver))
             {
-                playerController.Knockback(transform, knockback, 0.18f);
+                receiver.ApplyKnockback(transform, knockback, 0.18f);
             }
         }
     }
@@ -548,6 +668,12 @@ public sealed class BossAttackController : MonoBehaviour
     private LineRenderer CreateLineRenderer(string objectName)
     {
         GameObject warningObject = new(objectName);
+        warningObject.layer = gameObject.layer;
+        if (groundIndicator != null)
+        {
+            warningObject.transform.SetParent(groundIndicator, false);
+        }
+
         activeTelegraphs.Add(warningObject);
 
         LineRenderer line = warningObject.AddComponent<LineRenderer>();
@@ -602,15 +728,81 @@ public sealed class BossAttackController : MonoBehaviour
             audioSource.PlayOneShot(stats.attackClip);
         }
 
-        string triggerName = attackType.ToString();
+        CreateAttackPulse(attackType);
+
+        string triggerName = GetAnimatorTriggerName(attackType);
         if (animator != null && HasTrigger(animator, triggerName))
         {
             animator.SetTrigger(triggerName);
         }
     }
 
+    private string GetAnimatorTriggerName(BossAttackType attackType)
+    {
+        return attackType switch
+        {
+            BossAttackType.Format1 => stats.format1Trigger,
+            BossAttackType.Format2 => stats.format2Trigger,
+            BossAttackType.Format3 => stats.format3Trigger,
+            BossAttackType.Format4 => stats.format4Trigger,
+            BossAttackType.Format6 => stats.format6Trigger,
+            _ => string.Empty
+        };
+    }
+
+    private void CreateAttackPulse(BossAttackType attackType)
+    {
+        if (vfxRoot == null)
+        {
+            return;
+        }
+
+        GameObject pulseObject = new($"AttackVFX_Format{(int)attackType}");
+        pulseObject.layer = gameObject.layer;
+        pulseObject.transform.SetParent(vfxRoot, false);
+
+        LineRenderer line = pulseObject.AddComponent<LineRenderer>();
+        line.useWorldSpace = false;
+        line.loop = true;
+        line.positionCount = 32;
+        line.startWidth = stats.telegraphLineWidth * 1.6f;
+        line.endWidth = line.startWidth;
+        line.startColor = stats.projectileColor;
+        line.endColor = stats.projectileColor;
+        line.sortingOrder = 101;
+
+        if (stats.telegraphMaterial != null)
+        {
+            line.sharedMaterial = stats.telegraphMaterial;
+        }
+        else
+        {
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader != null)
+            {
+                line.material = new Material(shader);
+            }
+        }
+
+        const float radius = 1.1f;
+        for (int i = 0; i < line.positionCount; i++)
+        {
+            float angle = i / (float)line.positionCount * Mathf.PI * 2f;
+            line.SetPosition(
+                i,
+                new Vector3(Mathf.Cos(angle) * radius, 0.05f, Mathf.Sin(angle) * radius));
+        }
+
+        Destroy(pulseObject, 0.25f);
+    }
+
     private static bool HasTrigger(Animator targetAnimator, string parameterName)
     {
+        if (string.IsNullOrWhiteSpace(parameterName))
+        {
+            return false;
+        }
+
         foreach (AnimatorControllerParameter parameter in targetAnimator.parameters)
         {
             if (parameter.type == AnimatorControllerParameterType.Trigger &&

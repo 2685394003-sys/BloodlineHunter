@@ -1,11 +1,8 @@
 ﻿using UnityEngine;
 
-[DefaultExecutionOrder(-200)]
 [DisallowMultipleComponent]
-public sealed class BossStatsManager : MonoBehaviour
+public sealed class BossConfig : MonoBehaviour
 {
-    public static BossStatsManager Instance { get; private set; }
-
     [Header("Boss - 基础生命")]
     [Min(1)] public int maxHealth = 100;
     [Range(0.01f, 0.99f)] public float phase1HealthRate = 0.70f;
@@ -14,11 +11,11 @@ public sealed class BossStatsManager : MonoBehaviour
     public bool invulnerableDuringPhaseChange = true;
     [Min(0f)] public float phaseChangeDuration = 1.5f;
     [Min(0.02f)] public float phaseBlinkInterval = 0.12f;
-    public bool teleportAfterPhaseChange = true;
+    public bool teleportAfterPhaseChange;
     [Min(0f)] public float deathDisableDelay = 2f;
 
     [Header("Boss - 出生与战斗区域")]
-    public bool randomSpawnOnStart = true;
+    public bool randomSpawnOnStart;
     public Vector3 arenaCenter = Vector3.zero;
     public Vector2 arenaHalfSize = new(16f, 16f);
     [Min(0f)] public float spawnMinDistanceFromPlayer = 8f;
@@ -55,7 +52,25 @@ public sealed class BossStatsManager : MonoBehaviour
     public AudioClip attackClip;
     public AudioClip deathClip;
 
-    [Header("格式1 - 玩家脚下预警斩击")]
+    [Header("Animator 参数（需与 Controller 完全一致）")]
+    public string phaseParameter = "Phase";
+    public string phaseChangeTrigger = "PhaseChange";
+    public string deathTrigger = "Death";
+    public string format1Trigger = "Format1";
+    public string format2Trigger = "Format2";
+    public string format3Trigger = "Format3";
+    public string format4Trigger = "Format4";
+    public string format5Trigger = "Format5";
+    public string format6Trigger = "Format6";
+
+    [Header("运行时调试")]
+    public bool showDebugPanel = true;
+    public bool logCombatEvents = true;
+    public bool drawCombatGizmos = true;
+    [Min(1)] public int debugDamageAmount = 10;
+    public Vector2 debugPanelPosition = new(12f, 12f);
+
+    [Header("格式1 - MeleePoint 近战圆形斩击")]
     [Min(0)] public int format1Damage = 1;
     [Min(0f)] public float format1WarningTime = 0.9f;
     [Min(0.1f)] public float format1Radius = 1.8f;
@@ -107,26 +122,6 @@ public sealed class BossStatsManager : MonoBehaviour
     [Min(0f)] public float format6Knockback = 6f;
     [Min(0f)] public float format6Cooldown = 5.5f;
     [Min(0f)] public float format6Weight = 1f;
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Debug.LogWarning("场景中存在多个 BossStatsManager，后加载的实例已停用。", this);
-            enabled = false;
-            return;
-        }
-
-        Instance = this;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            Instance = null;
-        }
-    }
 
     private void OnValidate()
     {

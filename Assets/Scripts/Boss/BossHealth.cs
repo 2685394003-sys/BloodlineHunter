@@ -3,9 +3,9 @@ using System.Collections;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public sealed class BossHealth : MonoBehaviour
+public sealed class BossHealth : MonoBehaviour, IDamageable
 {
-    [SerializeField] private BossStatsManager stats;
+    [SerializeField] private BossConfig stats;
 
     public int CurrentHealth { get; private set; }
     public int MaxHealth => stats != null ? stats.maxHealth : 1;
@@ -22,7 +22,7 @@ public sealed class BossHealth : MonoBehaviour
 
     private void Awake()
     {
-        stats ??= GetComponent<BossStatsManager>();
+        stats ??= GetComponent<BossConfig>();
         CurrentHealth = Mathf.Max(1, MaxHealth);
         HealthChanged?.Invoke(CurrentHealth, MaxHealth);
     }
@@ -30,6 +30,11 @@ public sealed class BossHealth : MonoBehaviour
     public bool TakeDamage(int amount)
     {
         return TakeDamage(amount, Vector3.zero);
+    }
+
+    void IDamageable.TakeDamage(int amount)
+    {
+        TakeDamage(amount, Vector3.zero);
     }
 
     public bool TakeDamage(int amount, Vector3 damageSource)
@@ -75,7 +80,24 @@ public sealed class BossHealth : MonoBehaviour
     [ContextMenu("测试：Boss 受到 10 点伤害")]
     private void DebugTakeDamage()
     {
-        TakeDamage(10, transform.position);
+        DebugApplyDamage(stats != null ? stats.debugDamageAmount : 10);
+    }
+
+    [ContextMenu("测试：直接击杀 Boss")]
+    private void DebugKill()
+    {
+        DebugApplyDamage(Mathf.Max(1, CurrentHealth));
+    }
+
+    public void DebugApplyDamage(int amount)
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[Boss 调试] 请先进入 Play 模式再测试受伤。", this);
+            return;
+        }
+
+        TakeDamage(Mathf.Max(1, amount), transform.position);
     }
 
     private void TryBeginNextPhase()
