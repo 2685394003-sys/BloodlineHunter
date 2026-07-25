@@ -326,7 +326,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -12.700012, y: -130.9}
+  m_AnchoredPosition: {x: -12.699951, y: -130.90002}
   m_SizeDelta: {x: 20, y: 160}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &232353264
@@ -481,7 +481,7 @@ Transform:
   m_GameObject: {fileID: 292745219}
   serializedVersion: 2
   m_LocalRotation: {x: 0.29729873, y: 0, z: 0, w: 0.9547846}
-  m_LocalPosition: {x: 22.73473, y: 6.21, z: 10.358749}
+  m_LocalPosition: {x: 24.134731, y: 6.21, z: 10.358749}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -662,7 +662,7 @@ Transform:
   m_GameObject: {fileID: 347756506}
   serializedVersion: 2
   m_LocalRotation: {x: 0.29729873, y: 0, z: 0, w: 0.9547846}
-  m_LocalPosition: {x: 22.73473, y: 6.21, z: 10.358749}
+  m_LocalPosition: {x: 24.134731, y: 6.21, z: 10.358749}
   m_LocalScale: {x: 0.82, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -912,7 +912,7 @@ GameObject:
   - component: {fileID: 628108334}
   m_Layer: 6
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1034,7 +1034,7 @@ Transform:
   m_GameObject: {fileID: 628108326}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 23.3, y: 1.31, z: 16.4}
+  m_LocalPosition: {x: 24.7, y: 1.31, z: 16.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1346,7 +1346,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -126.599976, y: -8.900024}
+  m_AnchoredPosition: {x: -126.6001, y: -8.900024}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &921099261
@@ -2952,8 +2952,8 @@ GameObject:
   - component: {fileID: 1706883654}
   - component: {fileID: 1706883652}
   - component: {fileID: 1706883657}
-  - component: {fileID: 1706883658}
   - component: {fileID: 1706883659}
+  - component: {fileID: 1706883660}
   m_Layer: 7
   m_Name: Enemy
   m_TagString: Untagged
@@ -2980,8 +2980,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.21875, y: 1.421875, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1.21875, y: 1.31, z: 0.2}
+  m_Center: {x: 0, y: 0.055245697, z: 0}
 --- !u!54 &1706883654
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3078,7 +3078,7 @@ Transform:
   m_GameObject: {fileID: 1706883650}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 25.05, y: 1.31, z: 21.17}
+  m_LocalPosition: {x: 25.05, y: 0.6997545, z: 21.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3107,7 +3107,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1706883658
+--- !u!114 &1706883659
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3116,27 +3116,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 1706883650}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 785707afe9e67f24eb83f914da9761ca, type: 3}
+  m_Script: {fileID: 11500000, guid: c86552d44dc01ec4eaf4f3f0a0a7df99, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyMovement
-  dirBlendSpeed: 7
+  m_EditorClassIdentifier: Assembly-CSharp::FlowFieldEnemy
   turnSmooth: 6
-  EnemyDetectionPonint: {fileID: 658216216}
---- !u!114 &1706883659
+  dirBlendSpeed: 7
+  slowDeceleration: 3
+--- !u!114 &1706883660
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1706883650}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c86552d44dc01ec4eaf4f3f0a0a7df99, type: 3}
+  m_Script: {fileID: 11500000, guid: 51f339b32c5bb7649a7e13f1118f088d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowFieldEnemy
-  moveSpeed: 3
-  turnSmooth: 6
-  dirBlendSpeed: 7
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyCombat
+  EnemyAttackPoint: {fileID: 658216216}
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &1938233345
 GameObject:
   m_ObjectHideFlags: 0
@@ -3171,7 +3172,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -60.6, y: -64.6}
+  m_AnchoredPosition: {x: -60.600098, y: -64.599976}
   m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1938233347
@@ -3551,6 +3552,10 @@ PrefabInstance:
     - target: {fileID: 4437829001060679510, guid: 7fae89c839bebcb4f898e625419535e8, type: 3}
       propertyPath: m_Name
       value: Player (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4437829001060679510, guid: 7fae89c839bebcb4f898e625419535e8, type: 3}
+      propertyPath: m_TagString
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 4692794859274079336, guid: 7fae89c839bebcb4f898e625419535e8, type: 3}
       propertyPath: m_LocalPosition.x
