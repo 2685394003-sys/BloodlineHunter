@@ -25,9 +25,12 @@ public class PlayerAttact : MonoBehaviour
     {
         if(timer <= 0)
         {
-        anim.SetBool("isAttacting",true);
-        attackPointAnim.SetBool("isAttacking",true);
-        SFXManager.Instance.PlayAttackSFX();
+        if (anim != null)
+            anim.SetBool("isAttacting",true);
+        if (attackPointAnim != null)
+            attackPointAnim.SetBool("isAttacking",true);
+        if (SFXManager.Instance != null)
+            SFXManager.Instance.PlayAttackSFX();
 
         timer = StatsManager.Instance.cooldown;
         }
@@ -35,8 +38,10 @@ public class PlayerAttact : MonoBehaviour
 
     public void Attackfalse()
     {
-        anim.SetBool("isAttacting",false);
-        attackPointAnim.SetBool("isAttacking",false);
+        if (anim != null)
+            anim.SetBool("isAttacting",false);
+        if (attackPointAnim != null)
+            attackPointAnim.SetBool("isAttacking",false);
     }
 
     public void DealDamage()
@@ -48,8 +53,13 @@ public class PlayerAttact : MonoBehaviour
 
         if(enemies.Length > 0)
         {
-            enemies[0].GetComponent<EnemyHealth>().ChangeEnemyHealth(StatsManager.Instance.damage);
-            enemies[0].GetComponent<EnemyKnockBack>().EnemyKnockback(transform,StatsManager.Instance.knockbackForce,StatsManager.Instance.stunTime,StatsManager.Instance.knockbackTime);
+            EnemyHealth enemyHealth = enemies[0].GetComponent<EnemyHealth>();
+            if (enemyHealth != null)
+                enemyHealth.ChangeEnemyHealth(StatsManager.Instance.damage);
+
+            EnemyKnockBack enemyKnockBack = enemies[0].GetComponent<EnemyKnockBack>();
+            if (enemyKnockBack != null)
+                enemyKnockBack.EnemyKnockback(transform,StatsManager.Instance.knockbackForce,StatsManager.Instance.stunTime,StatsManager.Instance.knockbackTime);
 
         }
 
@@ -57,6 +67,9 @@ public class PlayerAttact : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        if (AttackPoint == null || StatsManager.Instance == null)
+            return;
+
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(AttackPoint.position, StatsManager.Instance.weaponRange);
     }    

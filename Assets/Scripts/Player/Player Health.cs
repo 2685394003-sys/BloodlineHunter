@@ -9,14 +9,23 @@ public class PlayerHealth : MonoBehaviour
 
     public void ChangeHealth(int amount)
     {
-        if (invincible.CanTakeDamage())
+        if (amount <= 0 || StatsManager.Instance == null)
+        {
+            return;
+        }
+
+        if (invincible == null || invincible.CanTakeDamage())
         {
             StatsManager.Instance.currentHealth -= amount;
-            invincible.EnterInvincibleState();
+            if (invincible != null)
+            {
+                invincible.EnterInvincibleState();
+            }
 
             if (StatsManager.Instance.currentHealth <= 0)
             {
-                gameObject.SetActive(false);
+                ForceDeath();
+                return;
             }
             
             if (StatsManager.Instance.currentHealth > StatsManager.Instance.maxHealth)
@@ -28,7 +37,22 @@ public class PlayerHealth : MonoBehaviour
 
     public void ReHealth()
     {
+        if (StatsManager.Instance == null)
+        {
+            return;
+        }
+
         StatsManager.Instance.currentHealth = StatsManager.Instance.maxHealth;
         gameObject.SetActive(true);
+    }
+
+    public void ForceDeath()
+    {
+        if (StatsManager.Instance != null)
+        {
+            StatsManager.Instance.currentHealth = 0;
+        }
+
+        gameObject.SetActive(false);
     }
 }

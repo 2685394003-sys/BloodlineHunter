@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System.Collections.Generic;
 
 public sealed class PlayerController : MonoBehaviour
 {
@@ -48,8 +49,13 @@ public sealed class PlayerController : MonoBehaviour
         Vector2 input = cachedMoveInput;
 
         // 基于相机的俯视移动方向转换
-        Vector3 cameraForward = Vector3.ProjectOnPlane(viewCamera.transform.forward, Vector3.up).normalized;
-        Vector3 cameraRight = Vector3.ProjectOnPlane(viewCamera.transform.right, Vector3.up).normalized;
+        viewCamera ??= Camera.main;
+        Vector3 cameraForward = viewCamera != null
+            ? Vector3.ProjectOnPlane(viewCamera.transform.forward, Vector3.up).normalized
+            : Vector3.forward;
+        Vector3 cameraRight = viewCamera != null
+            ? Vector3.ProjectOnPlane(viewCamera.transform.right, Vector3.up).normalized
+            : Vector3.right;
         Vector3 rawMoveDir = (cameraForward * input.y + cameraRight * input.x);
         if (rawMoveDir.sqrMagnitude > 0.001f)
             rawMoveDir.Normalize();
@@ -62,8 +68,11 @@ public sealed class PlayerController : MonoBehaviour
         }
 
         // 动画参数
-        anim.SetFloat("horizontal", horizontalInput);
-        anim.SetFloat("vertical", input.y);
+        if (anim != null)
+        {
+            anim.SetFloat("horizontal", horizontalInput);
+            anim.SetFloat("vertical", input.y);
+        }
 
         // 移动执行
         if (StatsManager.Instance != null)
@@ -101,12 +110,33 @@ public sealed class PlayerController : MonoBehaviour
             return;
 
         nextAttackTime = Time.time + attackCooldown;
-        playerAttack.Attack();
+        if (playerAttack != null)
+        {
+            playerAttack.Attack();
+        }
+
         Vector3 origin = transform.position + facingDirection * attackRange;
-        Collider[] hits = Physics.OverlapSphere(origin, attackRadius);
+        Collider[] hits = Physics.OverlapSphere(
+            origin,
+            attackRadius,
+            ~0,
+            QueryTriggerInteraction.Collide);
+        HashSet<BossHealth> damagedBosses = new();
+
         foreach (Collider hit in hits)
         {
-            if (hit.TryGetComponent(out ChasingEnemy enemy))
+            BossHealth bossHealth = hit.GetComponentInParent<BossHealth>();
+            if (bossHealth != null && damagedBosses.Add(bossHealth))
+            {
+                int playerDamage = StatsManager.Instance != null
+                    ? Mathf.Max(1, StatsManager.Instance.damage)
+                    : 1;
+                bossHealth.TakeDamage(playerDamage, transform.position);
+                continue;
+            }
+
+            ChasingEnemy enemy = hit.GetComponentInParent<ChasingEnemy>();
+            if (enemy != null)
             {
                 enemy.ReceiveHit();
             }
