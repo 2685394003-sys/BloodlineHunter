@@ -5,23 +5,32 @@ using UnityEngine;
 public class EnemyCombat : MonoBehaviour
 {
     public Transform EnemyAttackPoint;
-    public LayerMask playerLayer;
 
     public void Attack()
     {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(EnemyAttackPoint.position, StatsManager.Instance.enemyweaponRange, StatsManager.Instance.playerLayer);
-        
-        if(hits.Length > 0)
+        if (EnemyAttackPoint == null || StatsManager.Instance == null)
+            return;
+
+        // 3D版：用球形检测代替2D圆形检测
+        Collider[] hits = Physics.OverlapSphere(EnemyAttackPoint.position, StatsManager.Instance.enemyweaponRange, StatsManager.Instance.playerLayer);
+
+        if (hits.Length > 0)
         {
-            PlayerHealth playerHp = hits[0].GetComponent<PlayerHealth>();
-            if(playerHp != null)
+            PlayerHealth playerHp = hits[0].GetComponentInParent<PlayerHealth>();
+            if (playerHp != null)
             {
                 playerHp.ChangeHealth(StatsManager.Instance.enemydamage);
-                hits[0].GetComponent<PlayerMovement>().Knockback(transform, StatsManager.Instance.enemyknockbackForce,StatsManager.Instance.enemystunTime);
-                
+                // 击退等其他效果暂未实现（3D版待做）
             }
-
         }
-    }   
-    
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (EnemyAttackPoint == null || StatsManager.Instance == null)
+            return;
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(EnemyAttackPoint.position, StatsManager.Instance.enemyweaponRange);
+    }
 }
