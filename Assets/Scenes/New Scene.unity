@@ -239,6 +239,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 90310370}
+  - component: {fileID: 90310371}
   m_Layer: 6
   m_Name: shengchengfangxiang
   m_TagString: Untagged
@@ -267,6 +268,23 @@ Transform:
   - {fileID: 1990676438}
   m_Father: {fileID: 179751063}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &90310371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 90310369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecb4ab40f749c744589636c7448c64e5, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnPointsAimBoss
+  boss: {fileID: 0}
+  denseLocalDirection: {x: -1, y: 0, z: 0}
+  rotationSpeed: 360
+  findRetryInterval: 0.5
+  gizmoArrowLength: 5
 --- !u!1 &107344015
 GameObject:
   m_ObjectHideFlags: 0
@@ -1011,6 +1029,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1169694850337869449, guid: e818e72421969514ba70bf27340b4dd8, type: 3}
   m_PrefabInstance: {fileID: 2146003447}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &555628464
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 40.010735
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 45.012943
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
+      propertyPath: m_Name
+      value: changjing
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a1a4a919dfc8a1a46a9f5b5a70dcfd87, type: 3}
 --- !u!1 &593440810
 GameObject:
   m_ObjectHideFlags: 0
@@ -1249,7 +1324,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a770b47b37de0de4390f6c044b0464c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterSpawnPoint
-  enemyPrefab: {fileID: 0}
+  enemyPrefab: {fileID: 398500053047794832, guid: 55bac6f7cd2c97b44bacec9207c10077, type: 3}
   monstersPerWave: 1
   spawnInterval: 8
   firstSpawnDelay: 3
@@ -1768,7 +1843,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a770b47b37de0de4390f6c044b0464c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterSpawnPoint
-  enemyPrefab: {fileID: 0}
+  enemyPrefab: {fileID: 398500053047794832, guid: 55bac6f7cd2c97b44bacec9207c10077, type: 3}
   monstersPerWave: 1
   spawnInterval: 8
   firstSpawnDelay: 3
@@ -2179,7 +2254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a770b47b37de0de4390f6c044b0464c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterSpawnPoint
-  enemyPrefab: {fileID: 0}
+  enemyPrefab: {fileID: 398500053047794832, guid: 55bac6f7cd2c97b44bacec9207c10077, type: 3}
   monstersPerWave: 1
   spawnInterval: 8
   firstSpawnDelay: 3
@@ -2622,7 +2697,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1475487501}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e965db8ddb97d34bb4ac0fd9421d420, type: 3}
   m_Name: 
@@ -3964,7 +4039,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a770b47b37de0de4390f6c044b0464c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterSpawnPoint
-  enemyPrefab: {fileID: 0}
+  enemyPrefab: {fileID: 398500053047794832, guid: 55bac6f7cd2c97b44bacec9207c10077, type: 3}
   monstersPerWave: 1
   spawnInterval: 8
   firstSpawnDelay: 3
@@ -4180,7 +4255,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a770b47b37de0de4390f6c044b0464c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterSpawnPoint
-  enemyPrefab: {fileID: 0}
+  enemyPrefab: {fileID: 398500053047794832, guid: 55bac6f7cd2c97b44bacec9207c10077, type: 3}
   monstersPerWave: 1
   spawnInterval: 8
   firstSpawnDelay: 3
@@ -4293,7 +4368,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2035534321}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b4da022b58bf40f4bb6699b39238960a, type: 3}
   m_Name: 
@@ -5209,3 +5284,4 @@ SceneRoots:
   - {fileID: 1788991915}
   - {fileID: 1160730180}
   - {fileID: 161759429}
+  - {fileID: 555628464}
