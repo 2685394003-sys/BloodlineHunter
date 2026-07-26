@@ -4,31 +4,35 @@ using UnityEngine;
 
 public class EnemyKnockBack : MonoBehaviour
 {
-    private Rigidbody2D rb;
-    private EnemyMovement Enemymovement;
+    private Rigidbody rb;
+    private FlowFieldEnemy Enemymovement;
 
     private void Start()
     {
-        rb=GetComponent<Rigidbody2D>();
-        Enemymovement = GetComponent<EnemyMovement>();
+        rb = GetComponent<Rigidbody>();
+        Enemymovement = GetComponent<FlowFieldEnemy>();
     }
 
-    public void EnemyKnockback(Transform playerTransform, float knockbackForce,float Stuntime,float knockbackTime)
+    public void EnemyKnockback(Transform playerTransform, float knockbackForce, float Stuntime, float knockbackTime)
     {
-        Enemymovement.ChangeState(EnemyState.Knockback);
-        if(gameObject.activeSelf)
+        if (Enemymovement != null)
+            Enemymovement.ChangeState(EnemyState.Knockback);
+        if (gameObject.activeSelf)
         {
-            StartCoroutine(StunTime(Stuntime,knockbackTime));
+            StartCoroutine(StunTime(Stuntime, knockbackTime));
         }
-        Vector2 direction = (transform.position - playerTransform.position).normalized;
-        rb.linearVelocity = direction * knockbackForce;
+        if (rb != null)
+        {
+            Vector3 direction = (transform.position - playerTransform.position).normalized;
+            rb.linearVelocity = direction * knockbackForce;
+        }
     }
 
-    IEnumerator StunTime(float Stuntime,float knockbackTime)
+    IEnumerator StunTime(float Stuntime, float knockbackTime)
     {
         yield return new WaitForSeconds(knockbackTime);
-        rb.linearVelocity = Vector2.zero;
+        if (rb != null) rb.linearVelocity = Vector3.zero;
         yield return new WaitForSeconds(Stuntime);
-        Enemymovement.ChangeState(EnemyState.Idle);
+        if (Enemymovement != null) Enemymovement.ChangeState(EnemyState.Idle);
     }
 }

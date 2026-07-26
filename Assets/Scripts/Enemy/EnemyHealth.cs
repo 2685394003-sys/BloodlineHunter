@@ -48,7 +48,8 @@ public class EnemyHealth : MonoBehaviour
         // 死亡逻辑：先生成掉落，再销毁怪物
         if(enemyCurrentHealth <= 0)
         {
-            SFXManager.Instance.PlayAttackdead();
+            if (SFXManager.Instance != null)
+                SFXManager.Instance.PlayAttackdead();
             TryDropPack();
             Destroy(gameObject);
         }
