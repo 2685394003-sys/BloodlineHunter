@@ -28,6 +28,9 @@ public sealed class BossController : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private Transform player;
     [SerializeField] private Transform visualRoot;
+    [SerializeField] private Transform vfxRoot;
+    [SerializeField] private BossGuard leftGuard;
+    [SerializeField] private BossGuard rightGuard;
 
     public BossState CurrentState { get; private set; } = BossState.Dormant;
     public float RemainingContractSeconds { get; private set; }
@@ -46,6 +49,11 @@ public sealed class BossController : MonoBehaviour
     private bool contractCountdownTriggered;
     private bool runtimeSetupValidated;
     private Renderer[] visualRenderers = Array.Empty<Renderer>();
+    private bool phaseTimeScaleAdjusted;
+    private float phaseOriginalTimeScale = 1f;
+    private GameObject contractVfxObject;
+    private LineRenderer contractVfxLine;
+    private GameObject phaseRainObject;
 
     private void Awake()
     {
@@ -57,6 +65,9 @@ public sealed class BossController : MonoBehaviour
         animator ??= GetComponentInChildren<Animator>(true);
         audioSource ??= GetComponent<AudioSource>();
         visualRoot ??= transform.Find("Visual");
+        vfxRoot ??= transform.Find("VFXRoot");
+        FindAndConfigureGuards();
+        attackController?.ConfigureGuards(leftGuard, rightGuard);
 
         if (bossCollider != null)
         {
@@ -111,6 +122,7 @@ public sealed class BossController : MonoBehaviour
         }
 
         UpdateFormat5Countdown();
+        UpdateContractVfx();
     }
 
     private void FixedUpdate()
@@ -154,6 +166,13 @@ public sealed class BossController : MonoBehaviour
             return;
         }
 
+        if (stats.stationaryAfterFirstPhase && bossHealth.CurrentPhase >= 1)
+        {
+            CurrentState = BossState.Chase;
+            StopMovement();
+            return;
+        }
+
         if (distance <= stats.stoppingDistance || toPlayer.sqrMagnitude < 0.001f)
         {
             CurrentState = BossState.Chase;
@@ -193,6 +212,15 @@ public sealed class BossController : MonoBehaviour
         CurrentState = BossState.PhaseChange;
         attackController.CancelCurrentAttack();
         StopMovement();
+        ApplyPhaseTransitionKnockback();
+
+        RestoreTimeScale();
+        if (stats.phaseSlowMotionRealtime > 0f && stats.phaseSlowMotionScale < 1f)
+        {
+            phaseOriginalTimeScale = Time.timeScale;
+            Time.timeScale = Mathf.Max(0.01f, stats.phaseSlowMotionScale);
+            phaseTimeScaleAdjusted = true;
+        }
 
         if (audioSource != null && stats.phaseChangeClip != null)
         {
@@ -212,7 +240,12 @@ public sealed class BossController : MonoBehaviour
 
         while (elapsed < stats.phaseChangeDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
+            if (phaseTimeScaleAdjusted && elapsed >= stats.phaseSlowMotionRealtime)
+            {
+                RestoreTimeScale();
+            }
+
             if (elapsed >= nextBlinkTime)
             {
                 renderersEnabled = !renderersEnabled;
@@ -223,6 +256,7 @@ public sealed class BossController : MonoBehaviour
             yield return null;
         }
 
+        RestoreTimeScale();
         SetRenderersEnabled(true);
 
         if (stats.teleportAfterPhaseChange)
@@ -231,6 +265,14 @@ public sealed class BossController : MonoBehaviour
         }
 
         SetAnimatorInteger(stats.phaseParameter, newPhase);
+        if (newPhase >= 2)
+        {
+            SpawnPhaseBloodPool();
+        }
+        if (newPhase >= 3)
+        {
+            StartPhaseThreeRain();
+        }
 
         // 先清空引用，再完成阶段；这样单次超高伤害跨过多个阈值时，
         // BossHealth 可以立即排队进入下一个转阶段。
@@ -258,6 +300,7 @@ public sealed class BossController : MonoBehaviour
             RemainingContractSeconds = stats.format5CountdownSeconds;
             SetAnimatorTrigger(stats.format5Trigger);
             ContractCountdownChanged?.Invoke(RemainingContractSeconds);
+            CreateContractVfx();
 
             if (stats.logCombatEvents)
             {
@@ -281,6 +324,7 @@ public sealed class BossController : MonoBehaviour
         }
 
         ContractCountdownActive = false;
+        DestroyContractVfx();
         ForceKillPlayer();
         ContractCountdownExpired?.Invoke();
     }
@@ -304,6 +348,11 @@ public sealed class BossController : MonoBehaviour
         attackController.CancelCurrentAttack();
         StopMovement();
         ContractCountdownActive = false;
+        RestoreTimeScale();
+        DestroyContractVfx();
+
+        leftGuard?.DisableForBossDeath();
+        rightGuard?.DisableForBossDeath();
 
         if (bossCollider != null)
         {
@@ -487,6 +536,170 @@ public sealed class BossController : MonoBehaviour
         }
     }
 
+    private void FindAndConfigureGuards()
+    {
+        BossGuard[] guards = GetComponentsInChildren<BossGuard>(true);
+        foreach (BossGuard guard in guards)
+        {
+            if (guard == null)
+            {
+                continue;
+            }
+
+            if (guard.Side == BossGuardSide.Left)
+            {
+                leftGuard ??= guard;
+            }
+            else
+            {
+                rightGuard ??= guard;
+            }
+        }
+
+        leftGuard?.Configure(BossGuardSide.Left, stats);
+        rightGuard?.Configure(BossGuardSide.Right, stats);
+    }
+
+    private void ApplyPhaseTransitionKnockback()
+    {
+        if (player == null || stats.phaseTransitionKnockback <= 0f)
+        {
+            return;
+        }
+
+        if (BossCombatTarget.TryGetInParent(player, out IKnockbackReceiver receiver))
+        {
+            receiver.ApplyKnockback(transform, stats.phaseTransitionKnockback, 0.22f);
+        }
+    }
+
+    private void RestoreTimeScale()
+    {
+        if (!phaseTimeScaleAdjusted)
+        {
+            return;
+        }
+
+        Time.timeScale = phaseOriginalTimeScale;
+        phaseTimeScaleAdjusted = false;
+    }
+
+    private void CreateContractVfx()
+    {
+        if (contractVfxObject != null)
+        {
+            return;
+        }
+
+        contractVfxObject = new GameObject("Boss_Format5_ContractSiphon");
+        contractVfxObject.layer = gameObject.layer;
+        contractVfxObject.transform.SetParent(vfxRoot != null ? vfxRoot : transform, false);
+        contractVfxLine = contractVfxObject.AddComponent<LineRenderer>();
+        contractVfxLine.useWorldSpace = true;
+        contractVfxLine.positionCount = 2;
+        contractVfxLine.startWidth = stats.telegraphLineWidth * 1.4f;
+        contractVfxLine.endWidth = stats.telegraphLineWidth * 0.55f;
+        contractVfxLine.startColor = stats.projectileColor;
+        contractVfxLine.endColor = stats.warningColor;
+        contractVfxLine.sortingOrder = 102;
+
+        Shader shader = Shader.Find("Sprites/Default");
+        if (stats.telegraphMaterial != null)
+        {
+            contractVfxLine.sharedMaterial = stats.telegraphMaterial;
+        }
+        else if (shader != null)
+        {
+            contractVfxLine.material = new Material(shader);
+        }
+    }
+
+    private void UpdateContractVfx()
+    {
+        if (!ContractCountdownActive || contractVfxLine == null || player == null)
+        {
+            return;
+        }
+
+        float minimumY = stats.GetEffectHeight();
+        Vector3 playerPoint = player.position;
+        Vector3 bossPoint = transform.position;
+        playerPoint.y = Mathf.Max(playerPoint.y, minimumY);
+        bossPoint.y = Mathf.Max(bossPoint.y, minimumY);
+        contractVfxLine.SetPosition(0, playerPoint);
+        contractVfxLine.SetPosition(1, bossPoint);
+
+        float pulse = 0.65f + Mathf.Sin(Time.unscaledTime * 12f) * 0.35f;
+        Color color = stats.projectileColor;
+        color.a *= pulse;
+        contractVfxLine.startColor = color;
+    }
+
+    private void DestroyContractVfx()
+    {
+        if (contractVfxObject != null)
+        {
+            Destroy(contractVfxObject);
+        }
+
+        contractVfxObject = null;
+        contractVfxLine = null;
+    }
+
+    private void SpawnPhaseBloodPool()
+    {
+        if (!stats.createPhaseBloodPool)
+        {
+            return;
+        }
+
+        Vector2 randomDirection = UnityEngine.Random.insideUnitCircle.normalized;
+        if (randomDirection.sqrMagnitude < 0.001f)
+        {
+            randomDirection = Vector2.right;
+        }
+
+        Vector3 position = transform.position + new Vector3(
+            randomDirection.x,
+            0f,
+            randomDirection.y) * stats.bloodPoolSpawnDistance;
+        position.x = Mathf.Clamp(
+            position.x,
+            stats.arenaCenter.x - stats.arenaHalfSize.x,
+            stats.arenaCenter.x + stats.arenaHalfSize.x);
+        position.z = Mathf.Clamp(
+            position.z,
+            stats.arenaCenter.z - stats.arenaHalfSize.y,
+            stats.arenaCenter.z + stats.arenaHalfSize.y);
+        position.y = stats.GetEffectHeight();
+
+        GameObject poolObject = new("Boss_Phase_BloodPool");
+        poolObject.layer = gameObject.layer;
+        Transform groundRoot = attackController != null
+            ? attackController.GroundIndicator
+            : transform.Find("GroundIndicator");
+        if (groundRoot != null)
+        {
+            poolObject.transform.SetParent(groundRoot, true);
+        }
+
+        BossPhaseBloodPool pool = poolObject.AddComponent<BossPhaseBloodPool>();
+        pool.Initialize(stats, player, position);
+    }
+
+    private void StartPhaseThreeRain()
+    {
+        if (!stats.createPhase3Rain || phaseRainObject != null)
+        {
+            return;
+        }
+
+        phaseRainObject = new GameObject("Boss_Phase3_BloodRain");
+        phaseRainObject.layer = gameObject.layer;
+        phaseRainObject.transform.SetParent(vfxRoot != null ? vfxRoot : transform, true);
+        phaseRainObject.AddComponent<BossPhaseRain>().Initialize(stats);
+    }
+
     private void StopMovement()
     {
         if (bossRigidbody != null)
@@ -645,6 +858,8 @@ public sealed class BossController : MonoBehaviour
             groundIndicator,
             vfxRoot,
             animator);
+        FindAndConfigureGuards();
+        attackController?.ConfigureGuards(leftGuard, rightGuard);
 
 #if UNITY_EDITOR
         if (!Application.isPlaying)
@@ -798,6 +1013,9 @@ public sealed class BossController : MonoBehaviour
 
     private void OnDisable()
     {
+        RestoreTimeScale();
+        DestroyContractVfx();
+
         if (bossHealth != null)
         {
             bossHealth.PhaseChangeStarted -= HandlePhaseChangeStarted;

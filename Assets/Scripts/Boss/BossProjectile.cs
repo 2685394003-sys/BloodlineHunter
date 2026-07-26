@@ -10,6 +10,7 @@ public sealed class BossProjectile : MonoBehaviour
     private LayerMask playerLayer;
     private LayerMask obstacleLayer;
     private Transform owner;
+    private float minimumWorldY;
     private bool initialized;
 
     public void Initialize(
@@ -20,7 +21,8 @@ public sealed class BossProjectile : MonoBehaviour
         float lifeTime,
         LayerMask targetPlayerLayer,
         LayerMask worldObstacleLayer,
-        Transform projectileOwner)
+        Transform projectileOwner,
+        float minimumEffectHeight)
     {
         direction = Vector3.ProjectOnPlane(moveDirection, Vector3.up).normalized;
         speed = Mathf.Max(0f, moveSpeed);
@@ -29,6 +31,10 @@ public sealed class BossProjectile : MonoBehaviour
         playerLayer = targetPlayerLayer;
         obstacleLayer = worldObstacleLayer;
         owner = projectileOwner;
+        minimumWorldY = Mathf.Max(minimumEffectHeight, -0.99f);
+        Vector3 startPosition = transform.position;
+        startPosition.y = Mathf.Max(startPosition.y, minimumWorldY);
+        transform.position = startPosition;
         initialized = true;
 
         Destroy(gameObject, Mathf.Max(0.05f, lifeTime));
@@ -39,6 +45,9 @@ public sealed class BossProjectile : MonoBehaviour
         if (initialized)
         {
             transform.position += direction * (speed * Time.deltaTime);
+            Vector3 clampedPosition = transform.position;
+            clampedPosition.y = Mathf.Max(clampedPosition.y, minimumWorldY);
+            transform.position = clampedPosition;
         }
     }
 
