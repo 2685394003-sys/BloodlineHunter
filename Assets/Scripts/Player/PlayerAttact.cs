@@ -10,10 +10,15 @@ public class PlayerAttact : MonoBehaviour
     public Animator attackPointAnim;
     public Transform AttackPoint;
 
+    [Header("特效大小跟随攻击范围")]
+    [Tooltip("特效在 localScale=1 时的可视半径（世界单位）。用于把特效弧光大小对齐到判定框红线。在 Inspector 里微调此值即可。")]
+    [SerializeField] private float vfxVisualRadiusAtScaleOne = 2f;
+
     private float timer;
 
     private void Update()
     {
+        SyncVfxScale();
 
         if(timer > 0)
         {
@@ -44,45 +49,86 @@ public class PlayerAttact : MonoBehaviour
             attackPointAnim.SetBool("isAttacking",false);
     }
 
+    // 用攻击范围换算特效缩放：weaponRange 越大，特效弧光越大
+    private void SyncVfxScale()
+    {
+        if (AttackPoint == null || StatsManager.Instance == null)
+            return;
+
+        float s = StatsManager.Instance.weaponRange / Mathf.Max(0.001f, vfxVisualRadiusAtScaleOne);
+        AttackPoint.localScale = new Vector3(s, s, s);
+    }
+
+    // 由 Effects Animation 的 AnimationEvent 在挥砍最亮帧调用
     public void DealDamage()
     {
         if (AttackPoint == null || StatsManager.Instance == null)
-        return;
+            return;
 
-        Collider2D[] enemies = Physics2D.OverlapCircleAll(AttackPoint.position, StatsManager.Instance.weaponRange, StatsManager.Instance.enemyLayer);
+        float range = StatsManager.Instance.weaponRange;
+        int damage = StatsManager.Instance.damage;
+        Collider[] hits = Physics.OverlapSphere(
+            AttackPoint.position,
+            range,
+            StatsManager.Instance.enemyLayer,
+            QueryTriggerInteraction.Collide);
 
-        foreach (Collider2D enemyCollider in enemies)
+        HashSet<Component> damaged = new HashSet<Component>();
+        foreach (Collider hit in hits)
         {
-            BossHealth bossHealth = enemyCollider.GetComponentInParent<BossHealth>();
-            if (bossHealth != null)
-            {
-                bossHealth.TakeDamage(StatsManager.Instance.damage, transform.position);
-                return;
-            }
-
-            EnemyHealth enemyHealth = enemyCollider.GetComponentInParent<EnemyHealth>();
-            if (enemyHealth == null)
+            if (hit == null)
                 continue;
 
-            enemyHealth.ChangeEnemyHealth(StatsManager.Instance.damage);
-
-            EnemyKnockBack enemyKnockBack = enemyCollider.GetComponentInParent<EnemyKnockBack>();
-            if (enemyKnockBack != null)
+            // Boss 与一切实现 IDamageable 的目标（对齐 BossCombatTarget 范式）
+            if (BossCombatTarget.TryGetInParent<IDamageable>(hit, out IDamageable damageable))
             {
-                enemyKnockBack.EnemyKnockback(transform, StatsManager.Instance.knockbackForce, StatsManager.Instance.stunTime, StatsManager.Instance.knockbackTime);
+                Component asComponent = damageable as Component;
+                if (asComponent != null && !damaged.Add(asComponent))
+                    continue;
+
+                damageable.TakeDamage(damage);
+
+                if (StatsManager.Instance.knockbackForce > 0f &&
+                    BossCombatTarget.TryGetInParent<IKnockbackReceiver>(hit, out IKnockbackReceiver receiver))
+                {
+                    receiver.ApplyKnockback(transform, StatsManager.Instance.knockbackForce, StatsManager.Instance.knockbackTime);
+                }
+                continue;
             }
 
-            return;
+            // 普通敌人
+            EnemyHealth enemyHealth = hit.GetComponentInParent<EnemyHealth>();
+            if (enemyHealth == null || !damaged.Add(enemyHealth))
+                continue;
+
+            enemyHealth.ChangeEnemyHealth(damage);
+
+            EnemyKnockBack enemyKnockBack = hit.GetComponentInParent<EnemyKnockBack>();
+            if (enemyKnockBack != null)
+            {
+                enemyKnockBack.EnemyKnockback(
+                    transform,
+                    StatsManager.Instance.knockbackForce,
+                    StatsManager.Instance.stunTime,
+                    StatsManager.Instance.knockbackTime);
+            }
         }
     }
 
-    private void OnDrawGizmosSelected()
+    [ContextMenu("测试/触发一次挥砍伤害")]
+    private void DebugDealDamage()
+    {
+        DealDamage();
+    }
+
+    // 编辑时始终可见，半径跟随 StatsManager.weaponRange，与特效范围对齐
+    private void OnDrawGizmos()
     {
         if (AttackPoint == null || StatsManager.Instance == null)
             return;
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(AttackPoint.position, StatsManager.Instance.weaponRange);
-    }    
+    }
 
 }
