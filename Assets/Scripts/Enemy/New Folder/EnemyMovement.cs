@@ -6,6 +6,7 @@ public class EnemyMovement : MonoBehaviour
 {
     private EnemyState enemyState;
     private float shoottimer;
+    private float attackCooldownTimer; // 每只小怪自己的攻击冷却计时器(上限由StatsManager.enemyattaCooldown统一管理)
 
     private Rigidbody2D rb;
     public Transform EnemyDetectionPonint;
@@ -35,9 +36,9 @@ public class EnemyMovement : MonoBehaviour
 
             CheckForPlayer();
 
-            if(StatsManager.Instance.enemyattaCooldownTimer > 0)
+            if(attackCooldownTimer > 0)
             {
-                StatsManager.Instance.enemyattaCooldownTimer -= Time.deltaTime;
+                attackCooldownTimer -= Time.deltaTime;
             }
 
             if(shoottimer > 0)
@@ -66,11 +67,11 @@ public class EnemyMovement : MonoBehaviour
         {
             player = hits[0].transform;
         
-            if(Vector2.Distance(transform.position, player.position) <= StatsManager.Instance.enemyAttackRange && StatsManager.Instance.enemyattaCooldownTimer <= 0)
+            if(Vector2.Distance(transform.position, player.position) <= StatsManager.Instance.enemyAttackRange && attackCooldownTimer <= 0)
             {
                 Stop();
                 ChangeState(EnemyState.isAttacking);
-               StatsManager.Instance.enemyattaCooldownTimer = StatsManager.Instance.enemyattaCooldown;
+               attackCooldownTimer = StatsManager.Instance.enemyattaCooldown;
             }
 
             else if(Vector2.Distance(transform.position, player.position) > StatsManager.Instance.enemyAttackRange && enemyState != EnemyState.isAttacking)
@@ -138,10 +139,10 @@ public class EnemyMovement : MonoBehaviour
 
     void Chase()
     {
-        if(Vector2.Distance(transform.position, player.transform.position) <= StatsManager.Instance.enemyAttackRange && StatsManager.Instance.enemyattaCooldownTimer <= 0)
+        if(Vector2.Distance(transform.position, player.transform.position) <= StatsManager.Instance.enemyAttackRange && attackCooldownTimer <= 0)
         {
             ChangeState(EnemyState.isAttacking);
-            StatsManager.Instance.enemyattaCooldownTimer = StatsManager.Instance.enemyattaCooldown;
+            attackCooldownTimer = StatsManager.Instance.enemyattaCooldown;
         }
 
         Vector2 direction = (player.position - transform.position).normalized;
