@@ -29,6 +29,7 @@ public class SpawnPointsAimBoss : MonoBehaviour
     public float gizmoArrowLength = 5f;
 
     private float findTimer;
+    private bool bossLogged;           // 锁定日志只打一次
 
     private void LateUpdate()
     {
@@ -37,8 +38,31 @@ public class SpawnPointsAimBoss : MonoBehaviour
             findTimer -= Time.deltaTime;
             if (findTimer > 0f) return;
             findTimer = findRetryInterval;
+            // 先找激活的 boss;找不到再用 FindObjectsOfTypeAll 连禁用的也找(boss 可能被暂时禁用)
+            // 注意:6000.5 的泛型 FindFirstObjectByType 没有 (FindObjectsInactive, FindObjectsSortMode) 双参重载(CS1501),勿用
             BossHealth bh = FindFirstObjectByType<BossHealth>();
-            if (bh != null) boss = bh.transform;
+            if (bh == null)
+            {
+                // FindObjectsOfTypeAll 能找到禁用物体,但也会带出 prefab 资产;
+                // 用 scene.IsValid() 过滤,只保留场景里的物体
+                foreach (BossHealth cand in Resources.FindObjectsOfTypeAll<BossHealth>())
+                {
+                    if (cand != null && cand.gameObject.scene.IsValid())
+                    {
+                        bh = cand;
+                        break;
+                    }
+                }
+            }
+            if (bh != null)
+            {
+                boss = bh.transform;
+                if (!bossLogged)
+                {
+                    bossLogged = true;
+                    Debug.Log("[生成方向] 已锁定 boss:" + bh.name + (bh.gameObject.activeInHierarchy ? "(激活)" : "(当前禁用,对准其停驻位置)"), this);
+                }
+            }
             if (boss == null) return; // 场景没有 boss(或已销毁):保持当前朝向
         }
 
