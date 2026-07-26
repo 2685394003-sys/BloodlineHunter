@@ -16,14 +16,14 @@ public struct FlowCell
 
 public class FlowFieldManager : MonoBehaviour
 {
-    [Header("网格设置")]
+    [Header("网格设置 / Grid Settings")]
     public float cellSize = 1.2f;
     public int gridWidth = 120;
     public int gridHeight = 120;
     public Transform player;
     public LayerMask obstacleLayer;
 
-    [Header("调试")]
+    [Header("调试 / Debug")]
     public bool drawFlowArrows = true;
     public float arrowScale = 0.4f;
 
@@ -65,7 +65,7 @@ public class FlowFieldManager : MonoBehaviour
             {
                 Vector3 worldPos = GridToWorld(new Vector2Int(x, z));
                 // 缩小检测范围，修复判定过宽
-                float checkExt = cellSize * 0.28f;
+                float checkExt = cellSize * 0.45f; // 覆盖格子 90%,减少边缘漏检
                 bool hasObstacle = Physics.CheckBox(
                     worldPos + Vector3.up * 0.5f,
                     new Vector3(checkExt, 1, checkExt),
@@ -172,12 +172,26 @@ public class FlowFieldManager : MonoBehaviour
 
     public Vector3 GridToWorld(Vector2Int gridPos)
     {
-        return new Vector3(gridPos.x * cellSize, 0, gridPos.y * cellSize);
+        // 返回格子中心(不是左下角),让 CheckBox 和 Gizmos 都画在格子正中
+        return new Vector3((gridPos.x + 0.5f) * cellSize, 0, (gridPos.y + 0.5f) * cellSize);
     }
 
     public bool IsInGrid(int x, int z)
     {
         return x >= 0 && x < gridWidth && z >= 0 && z < gridHeight;
+    }
+
+    // 给 LevelGenerator 用:查询某个格子当前是 Walkable 还是 Obstacle
+    public CellState GetCellState(int x, int z)
+    {
+        if (!IsInGrid(x, z)) return CellState.Obstacle;
+        return grid[x, z].state;
+    }
+
+    // 给 LevelGenerator 用:立即重建一次流场(不等 0.2s 自动刷新)
+    public void ForceRescan()
+    {
+        UpdateFlowField();
     }
 
     public Vector3 GetFlowDirection(Vector3 enemyWorldPos)

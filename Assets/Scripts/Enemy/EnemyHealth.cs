@@ -7,12 +7,12 @@ public class EnemyHealth : MonoBehaviour
     public EnemyHurtFlash hurtFlash;
     public int enemyCurrentHealth;
 
-    [Header("血包预制体")]
+    [Header("血包预制体 / Health Pack Prefab")]
     public GameObject healthPackPrefab;
-    [Header("掉落概率 0~1（0=不掉，1=100%必掉）")]
+    [Header("掉落概率 0~1 / Drop Chance (0=never, 1=always)")]
     [Range(0f, 1f)] public float dropRate = 0.3f;
 
-    [Header("金币预制体")]
+    [Header("金币预制体 / Coin Prefab")]
     public GameObject coinPrefab;
     [Range(0f,1f)] public float coinDropRate = 0.4f;
 

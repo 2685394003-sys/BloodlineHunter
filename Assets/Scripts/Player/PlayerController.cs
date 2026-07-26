@@ -4,19 +4,19 @@ using System.Collections;
 
 public sealed class PlayerController : MonoBehaviour
 {
-    [Header("输入绑定")]
+    [Header("输入绑定 / Input Bindings")]
     public InputAction moveAction;
     public InputAction attackAction;
 
-    [Header("组件引用")]
+    [Header("组件引用 / Component References")]
     public Animator anim;
     public PlayerAttact playerAttack;
 
-    [Header("状态")]
+    [Header("状态 / State")]
     public bool isKnockedBack;
     public Vector3 knockbackVelocity;
 
-    [Header("攻击配置")]
+    [Header("攻击配置 / Attack Config")]
     [SerializeField] private float attackRange = 2.1f;
     [SerializeField] private float attackRadius = 1.15f;
     [SerializeField] private float attackCooldown = 0.35f;

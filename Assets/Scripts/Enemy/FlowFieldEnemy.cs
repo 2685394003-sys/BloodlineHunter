@@ -3,10 +3,10 @@ using UnityEngine;
 
 public class FlowFieldEnemy : MonoBehaviour
 {
-    [Header("流场寻路参数")]
+    [Header("流场寻路参数 / Flow Field Pathfinding")]
     public float turnSmooth = 6f;
     public float dirBlendSpeed = 7f;
-    [Header("丢失目标减速参数")]
+    [Header("丢失目标减速参数 / Lost-target Deceleration")]
     public float slowDeceleration = 3f;
 
     private FlowFieldManager flowField;

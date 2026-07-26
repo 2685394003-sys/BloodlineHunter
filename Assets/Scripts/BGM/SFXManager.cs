@@ -7,13 +7,13 @@ public class SFXManager : MonoBehaviour
     // 单例，其他脚本直接调用
     public static SFXManager Instance;
 
-    [Header("音效音量")]
+    [Header("音效音量 / SFX Volume")]
     public float attackVolume = 0.7f;
-    [Header("攻击音效集合")]
+    [Header("攻击音效集合 / Attack SFX Clips")]
     public AudioClip attackSound;
-    [Header("受伤音效集合")]
+    [Header("受伤音效集合 / Hurt SFX Clips")]
     public AudioClip huntSound;
-    [Header("死亡音效集合")]
+    [Header("死亡音效集合 / Death SFX Clips")]
     public AudioClip deadSound;
 
     private AudioSource sfxAudioSource;

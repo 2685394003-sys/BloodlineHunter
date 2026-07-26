@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 461836605992357399}
   - component: {fileID: 2417362882328181469}
   - component: {fileID: 596951718586242974}
+  - component: {fileID: -623067567028671715}
   m_Layer: 3
   m_Name: zhuzi
   m_TagString: Untagged
@@ -28,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 4218974325984533256}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 27.99, y: 0.3, z: 18.31}
+  m_LocalPosition: {x: 27.99, y: 0.15, z: 18.31}
   m_LocalScale: {x: 61.22, y: 61.22, z: 61.22}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -92,6 +93,27 @@ MeshRenderer:
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &596951718586242974
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4218974325984533256}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.01523869, y: 0.015238692, z: 0.03882721}
+  m_Center: {x: -4.656613e-10, y: -0.0000000027939686, z: 0.019413538}
+--- !u!65 &-623067567028671715
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

@@ -10,14 +10,14 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public sealed class CameraSpriteViewLock : MonoBehaviour
 {
-    [Header("Camera (local to its Camera Rig)")]
+    [Header("相机(局部于相机装备) / Camera (local to its Camera Rig)")]
     [SerializeField] private Vector3 cameraLocalPosition = new(-12.285717f, 9.652815f, -12.285717f);
     [SerializeField] private Vector3 cameraLocalEulerAngles = new(27f, 45f, 0f);
     [SerializeField] private float fieldOfView = 35f;
     [SerializeField] private float nearClipPlane = 0.3f;
     [SerializeField] private float farClipPlane = 100f;
 
-    [Header("Sprite cards")]
+    [Header("精灵卡片 / Sprite Cards")]
     [SerializeField] private Vector3 spriteWorldEulerAngles = new(27f, 45f, 0f);
     [SerializeField] private bool applyEveryFrame = true;
 

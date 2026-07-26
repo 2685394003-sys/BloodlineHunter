@@ -10,8 +10,8 @@ public class PlayerAttact : MonoBehaviour
     public Animator attackPointAnim;
     public Transform AttackPoint;
 
-    [Header("特效大小跟随攻击范围")]
-    [Tooltip("特效在 localScale=1 时的可视半径（世界单位）。用于把特效弧光大小对齐到判定框红线。在 Inspector 里微调此值即可。")]
+    [Header("特效大小跟随攻击范围 / VFX Scale Follows Weapon Range")]
+    [Tooltip("特效在 localScale=1 时的可视半径(世界单位),用于对齐判定框红线 / VFX visual radius at localScale=1 (world units), align to red gizmo circle")]
     [SerializeField] private float vfxVisualRadiusAtScaleOne = 2f;
 
     private float timer;

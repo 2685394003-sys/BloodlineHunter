@@ -5,7 +5,7 @@ using System.Collections;
 [RequireComponent(typeof(PlayerController))]
 public class PlayerDash : MonoBehaviour
 {
-    [Header("冲刺设置")]
+    [Header("冲刺设置 / Dash Settings")]
     public float dashDuration; // 冲刺持续时间
     public InputAction shiftAction;
     public InputAction moveAction; // 和PlayerController共用同一套移动Action

@@ -6,11 +6,11 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
 
-    [Header("背景音乐歌单列表")]
+    [Header("背景音乐歌单列表 / BGM Playlist")]
     public List<AudioClip> bgmList;
-    [Header("是否随机播放")]
+    [Header("是否随机播放 / Shuffle")]
     public bool playRandom = false;
-    [Header("基础音量")]
+    [Header("基础音量 / Base Volume")]
     public float baseVolume = 0.6f;
 
     private AudioSource bgmSource;
